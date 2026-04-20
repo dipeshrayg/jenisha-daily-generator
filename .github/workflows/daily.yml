@@ -1,0 +1,27 @@
+name: 💗 Daily Love Page for Jenisha
+
+on:
+  schedule:
+    - cron: '45 0 * * *'   # 6:30 AM Nepal Time (NPT = UTC+5:45)
+  workflow_dispatch:        # Adds a manual "Run workflow" button on GitHub
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout generator repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate & publish daily love page
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USERNAME: dipeshrayg
+          GH_EMAIL: dipesh.ray.g@gmail.com
+          HER_NAME: Jenisha
+        run: python generator.py
