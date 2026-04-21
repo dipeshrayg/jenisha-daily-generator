@@ -1,8 +1,10 @@
 """
-Daily Jenisha Love Page Generator
-- 12 unique themes, grows over time
-- Cycles by day ordinal so nothing repeats for weeks
-- Works locally AND on GitHub Actions (no PC needed)
+Daily Jenisha Love Page Generator  v2.0
+- Interactive unlock mechanics (star hunt, scratch reveal, constellation)
+- Flirty professional email format  (every 11th day)
+- Heart-shaped QR code format       (every 7th day)
+- Theme drives colors, particles, messages
+- Runs locally AND on GitHub Actions
 """
 
 import os, json, subprocess, datetime, sys, time, tempfile, urllib.request, urllib.error
@@ -36,90 +38,815 @@ if not TOKEN:
     print("❌  No token found. Set GH_PAT env var or create .env file.")
     sys.exit(1)
 
-# ── Theme pool — add more over time, never delete ──────────────────────────────
+
+# ── Theme pool ─────────────────────────────────────────────────────────────────
 ALL_THEMES = [
-    {"name": "Galaxy & Universe",   "slug": "galaxy",     "mood": "Emotional, Deep"},
-    {"name": "Cherry Blossom",      "slug": "sakura",     "mood": "Loving, Gentle"},
-    {"name": "Ocean Waves",         "slug": "ocean",      "mood": "Romantic, Peaceful"},
-    {"name": "Firefly Forest",      "slug": "firefly",    "mood": "Dreamy, Magical"},
-    {"name": "Neon Glow",           "slug": "neon",       "mood": "Flirty, Fun"},
-    {"name": "Aurora Borealis",     "slug": "aurora",     "mood": "Breathtaking"},
-    {"name": "Sunrise",             "slug": "sunrise",    "mood": "Hopeful, Warm"},
-    {"name": "Rain on Window",      "slug": "rain",       "mood": "Cozy, Emotional"},
-    {"name": "Particle Heart",      "slug": "particle",   "mood": "Dramatic, Loving"},
-    {"name": "Matrix Love",         "slug": "matrix",     "mood": "Interesting, Bold"},
-    {"name": "Butterfly Garden",    "slug": "butterfly",  "mood": "Playful, Cute"},
-    {"name": "Campfire & Stars",    "slug": "campfire",   "mood": "Cozy, Romantic"},
+    {
+        "name": "Galaxy & Universe", "slug": "galaxy", "mood": "Emotional, Deep",
+        "bg": "radial-gradient(ellipse at 30% 20%,#1a0a2e,#080012 55%,#000008)",
+        "primary": "#ff6b9d", "secondary": "#c44dff", "glow": "255,107,157",
+        "emojis": ["💗","✨","💫","🌸","⭐","💕","🌟","🪐","💖"],
+        "mechanic": "starhunt",
+        "hunt_label": "Find all 7 hidden stars ✦",
+        "unlock_emoji": "💗",
+        "message": [
+            "Of all the stars in this universe,",
+            "you are the one that makes the whole sky make sense.",
+            "",
+            "Every time I think of you, it feels like",
+            "watching a constellation appear for the first time —",
+            "<em>breathtaking, extraordinary, and rare.</em>",
+            "",
+            "This universe became more beautiful",
+            f"the moment you were in it, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "✨ Send Love Back ✨",
+    },
+    {
+        "name": "Cherry Blossom", "slug": "sakura", "mood": "Loving, Gentle",
+        "bg": "linear-gradient(160deg,#1a0812,#2d0a1a 40%,#0d0810)",
+        "primary": "#ffb7d5", "secondary": "#ff7eb3", "glow": "255,150,200",
+        "emojis": ["🌸","💗","🌷","✨","🌺","💕","🍃","🌼","💖"],
+        "mechanic": "starhunt",
+        "hunt_label": "Find 7 hidden blossoms 🌸",
+        "unlock_emoji": "🌸",
+        "message": [
+            "Cherry blossoms fall for just a week —",
+            "brief, beautiful, impossible to look away from.",
+            "",
+            "That's what it's like when you smile.",
+            "<em>Everything else stops.</em>",
+            "",
+            "You are the kind of beautiful",
+            f"that seasons are named after, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🌸 Bloom Together 🌸",
+    },
+    {
+        "name": "Ocean Waves", "slug": "ocean", "mood": "Romantic, Peaceful",
+        "bg": "radial-gradient(ellipse at 50% 100%,#001a33,#000c1a 50%,#00070f)",
+        "primary": "#4fc3f7", "secondary": "#0288d1", "glow": "79,195,247",
+        "emojis": ["🌊","💙","✨","🐚","💎","🌟","💗","🫧","🪸"],
+        "mechanic": "starhunt",
+        "hunt_label": "Collect 7 hidden sea stars 🌊",
+        "unlock_emoji": "🌊",
+        "message": [
+            "The ocean doesn't apologize for its depth.",
+            "It doesn't shrink for anyone.",
+            "",
+            "<em>Neither do you.</em>",
+            "",
+            "You are vast and moving and full of things",
+            "that take your breath away the more you explore —",
+            f"and I want to spend a lifetime exploring, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🌊 Ride the Wave 🌊",
+    },
+    {
+        "name": "Firefly Forest", "slug": "firefly", "mood": "Dreamy, Magical",
+        "bg": "radial-gradient(ellipse at 50% 80%,#0a1a08,#050e04 50%,#020602)",
+        "primary": "#b8ff6e", "secondary": "#7bcc2a", "glow": "184,255,110",
+        "emojis": ["✨","💛","🌿","🍃","⭐","💚","🌟","🌙","💫"],
+        "mechanic": "starhunt",
+        "hunt_label": "Catch 7 fireflies in the dark 🌿",
+        "unlock_emoji": "🌿",
+        "message": [
+            "In the quietest part of the forest,",
+            "fireflies make the dark worth staying in.",
+            "",
+            "<em>You do that.</em>",
+            "",
+            "You make the ordinary world glow",
+            "with something I can't explain —",
+            f"only feel, deeply, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "✨ Light Up the Night ✨",
+    },
+    {
+        "name": "Neon Glow", "slug": "neon", "mood": "Flirty, Fun",
+        "bg": "linear-gradient(135deg,#0a0015,#15002a,#0a000f)",
+        "primary": "#ff2d78", "secondary": "#00ffcc", "glow": "255,45,120",
+        "emojis": ["💗","⚡","🔥","💋","✨","💥","🌟","💫","🎯"],
+        "mechanic": "starhunt",
+        "hunt_label": "Find 7 glowing signals 💥",
+        "unlock_emoji": "⚡",
+        "message": [
+            "Warning: prolonged exposure to you",
+            "causes excessive smiling,",
+            "loss of focus on everything else,",
+            "",
+            "<em>and an inability to stop thinking about you.</em>",
+            "",
+            "Side effects are permanent.",
+            f"No cure wanted, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "⚡ Spark It Back ⚡",
+    },
+    {
+        "name": "Aurora Borealis", "slug": "aurora", "mood": "Breathtaking",
+        "bg": "linear-gradient(180deg,#000810,#001020 50%,#000508)",
+        "primary": "#00ffcc", "secondary": "#7b2fff", "glow": "0,255,204",
+        "emojis": ["🌌","💚","💜","✨","🌟","💗","🫧","⭐","💫"],
+        "mechanic": "starhunt",
+        "hunt_label": "Discover 7 aurora fragments 🌌",
+        "unlock_emoji": "🌌",
+        "message": [
+            "The aurora only appears when the conditions",
+            "are exactly right — rare, specific, unrepeatable.",
+            "",
+            "<em>So are you.</em>",
+            "",
+            "I have seen a lot of things.",
+            "Nothing comes close to the feeling",
+            f"of knowing you exist, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🌌 Paint the Sky 🌌",
+    },
+    {
+        "name": "Sunrise", "slug": "sunrise", "mood": "Hopeful, Warm",
+        "bg": "linear-gradient(180deg,#0a0400,#2a0e00 30%,#5a1e00 60%,#8a3000)",
+        "primary": "#ffb347", "secondary": "#ff6b35", "glow": "255,160,60",
+        "emojis": ["🌅","☀️","✨","🌤️","💛","🌸","💗","🌻","⭐"],
+        "mechanic": "starhunt",
+        "hunt_label": "Gather 7 rays of golden light 🌅",
+        "unlock_emoji": "🌅",
+        "message": [
+            "Every morning the world gets a second chance —",
+            "warm, golden, quietly full of hope.",
+            "",
+            "<em>That's what you feel like.</em>",
+            "",
+            "Like a sunrise I never get tired of watching.",
+            "Every day is softer",
+            f"just because you're in it, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🌅 Brighten My Day 🌅",
+    },
+    {
+        "name": "Rain on Window", "slug": "rain", "mood": "Cozy, Emotional",
+        "bg": "linear-gradient(160deg,#060b14,#0a1020 50%,#060810)",
+        "primary": "#7eb8e8", "secondary": "#4a90d9", "glow": "126,184,232",
+        "emojis": ["🌧️","💙","💗","🫧","✨","🌊","💎","🌟","💕"],
+        "mechanic": "starhunt",
+        "hunt_label": "Find 7 raindrops in the dark 🌧️",
+        "unlock_emoji": "🌧️",
+        "message": [
+            "There's a specific kind of peace",
+            "that comes with rain on a window —",
+            "the world outside blurring into something soft.",
+            "",
+            "<em>You give me that.</em>",
+            "",
+            "A quiet comfort I didn't know I needed",
+            f"until I found you, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🌧️ Stay Cozy 🌧️",
+    },
+    {
+        "name": "Particle Heart", "slug": "particle", "mood": "Dramatic, Loving",
+        "bg": "radial-gradient(ellipse at 50% 50%,#1a0010,#0d0008 50%,#050005)",
+        "primary": "#ff1464", "secondary": "#ff6b9d", "glow": "255,20,100",
+        "emojis": ["💗","💖","💕","💝","❤️","🌹","✨","💘","💓"],
+        "mechanic": "starhunt",
+        "hunt_label": "Find 7 fragments of a broken heart 💗",
+        "unlock_emoji": "💗",
+        "message": [
+            "A heart doesn't break all at once.",
+            "It cracks slowly, quietly,",
+            "in all the places where love was supposed to live.",
+            "",
+            "<em>But it also heals that way —</em>",
+            "slowly, quietly, one moment at a time.",
+            "",
+            f"You are every moment it's been healing, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "💗 Send My Heart 💗",
+    },
+    {
+        "name": "Matrix Love", "slug": "matrix", "mood": "Bold, Unique",
+        "bg": "linear-gradient(135deg,#000800,#001200,#000500)",
+        "primary": "#00ff41", "secondary": "#00cc33", "glow": "0,255,65",
+        "emojis": ["💚","⚡","🔮","✨","💫","🌟","💗","🎯","🔥"],
+        "mechanic": "starhunt",
+        "hunt_label": "Decode 7 encrypted signals 🔮",
+        "unlock_emoji": "🔮",
+        "message": [
+            "In a world of endless noise and simulation,",
+            "some things are irreducibly real —",
+            "",
+            "<em>the way I feel when I think of you</em>",
+            "is one of them.",
+            "",
+            "No algorithm predicts it.",
+            "No code describes it.",
+            f"Only your name explains it, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🔮 Enter the Code 🔮",
+    },
+    {
+        "name": "Butterfly Garden", "slug": "butterfly", "mood": "Playful, Cute",
+        "bg": "radial-gradient(ellipse at 40% 30%,#0a0a18,#050510 55%,#020208)",
+        "primary": "#f9a8d4", "secondary": "#a78bfa", "glow": "249,168,212",
+        "emojis": ["🦋","🌸","💜","🌺","✨","💗","🌼","🪻","💕"],
+        "mechanic": "starhunt",
+        "hunt_label": "Chase 7 hidden butterflies 🦋",
+        "unlock_emoji": "🦋",
+        "message": [
+            "Butterflies don't try to be beautiful.",
+            "They just emerge and the world stops",
+            "to stare.",
+            "",
+            "<em>You do that without trying.</em>",
+            "",
+            "You walk into a room and the whole place",
+            f"quietly rearranges itself around you, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🦋 Flutter My Heart 🦋",
+    },
+    {
+        "name": "Campfire & Stars", "slug": "campfire", "mood": "Cozy, Romantic",
+        "bg": "radial-gradient(ellipse at 50% 90%,#1a0800,#0d0500 50%,#050200)",
+        "primary": "#ff8c42", "secondary": "#ffcc70", "glow": "255,140,66",
+        "emojis": ["🔥","⭐","🌟","✨","🌙","💗","🪵","💛","🌾"],
+        "mechanic": "starhunt",
+        "hunt_label": "Find 7 embers in the dark 🔥",
+        "unlock_emoji": "🔥",
+        "message": [
+            "There's something about a campfire —",
+            "the way it pulls people close,",
+            "the way the cold disappears.",
+            "",
+            "<em>Talking to you feels like that.</em>",
+            "",
+            "Warm. Safe. No place I'd rather be",
+            f"than right here, with you, <strong>Jenisha.</strong>",
+        ],
+        "btn_text": "🔥 Keep Me Warm 🔥",
+    },
 ]
 
-# ── HTML Themes ────────────────────────────────────────────────────────────────
 
-def html_galaxy(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/><title>For {name} 💫</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:radial-gradient(ellipse at 30% 20%,#1a0a2e,#080012 50%,#000005);overflow:hidden;font-family:'Raleway',sans-serif;color:#fff;cursor:none}}#sc,#pc{{position:fixed;top:0;left:0;width:100%;height:100%}}#sc{{z-index:1}}#pc{{z-index:5;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,.9),transparent 70%);pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen}}.scene{{position:relative;z-index:10;width:100%;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(14px,3vh,28px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3.5rem,12vw,8rem);font-weight:700;background:linear-gradient(135deg,#ff9de2,#ff6b9d 30%,#c44dff 65%,#79cfff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;filter:blur(24px);transform:translateY(24px) scale(.92);animation:reveal 1.6s cubic-bezier(.22,1,.36,1) forwards 2.6s}}.title::after{{content:'';display:block;margin:8px auto 0;height:2px;width:0;background:linear-gradient(90deg,transparent,#ff6b9d,#c44dff,transparent);animation:lg 1s ease forwards 4.3s}}.sub{{font-size:clamp(.7rem,2.2vw,1rem);font-weight:300;letter-spacing:.45em;text-transform:uppercase;color:rgba(255,255,255,.5);opacity:0;animation:fup 1s ease forwards 4.6s}}.hw{{opacity:0;animation:fup .8s ease forwards 5.4s}}.hi{{display:inline-block;font-size:clamp(2.2rem,7vw,3.6rem);animation:hp 1.6s ease-in-out infinite 5.4s;filter:drop-shadow(0 0 18px rgba(255,107,157,.85))}}.mw{{max-width:min(580px,92vw);opacity:0;animation:fup 1.2s ease forwards 6.4s}}.msg{{font-size:clamp(.88rem,2.4vw,1.1rem);font-weight:300;line-height:1.95;color:rgba(255,255,255,.82)}}.msg em{{font-style:italic;color:#ff6b9d}}.msg strong{{font-weight:500;color:#e0c0ff}}.btn{{opacity:0;animation:fup .8s ease forwards 9s;background:transparent;border:1.5px solid rgba(255,107,157,.55);color:#fff;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2.2vw,.92rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:14px 40px;border-radius:50px;cursor:pointer;transition:all .35s;backdrop-filter:blur(8px)}}.btn:hover{{border-color:#ff6b9d;box-shadow:0 0 28px rgba(255,107,157,.5),0 0 56px rgba(196,77,255,.2);transform:translateY(-2px)}}.ds{{position:fixed;bottom:18px;right:20px;font-size:.7rem;letter-spacing:.18em;color:rgba(255,255,255,.22);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes reveal{{to{{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}}}}@keyframes lg{{to{{width:55%}}}}@keyframes fup{{from{{opacity:0;transform:translateY(18px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes hp{{0%,100%{{transform:scale(1)}}14%{{transform:scale(1.25)}}28%{{transform:scale(1)}}42%{{transform:scale(1.15)}}70%{{transform:scale(1)}}}}</style></head><body><canvas id="sc"></canvas><canvas id="pc"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">this is for you</div><div class="hw"><span class="hi">💗</span></div><div class="mw"><p class="msg">Of all the stars scattered across this universe,<br><em>you are the one that makes the whole sky make sense.</em><br><br>Every time I think of you, it feels like<br>watching a constellation appear for the first time —<br><strong>breathtaking, extraordinary, and rare.</strong><br><br>This universe became more beautiful<br>the moment you were in it, <em>{name}.</em></p></div><button class="btn" id="btn" onclick="sendLove()">✨ Feel My Love ✨</button></div><div class="ds">{date_str}</div><script>const sc=document.getElementById('sc'),sx=sc.getContext('2d');const pc=document.getElementById('pc'),px=pc.getContext('2d');let W=sc.width=pc.width=window.innerWidth,H=sc.height=pc.height=window.innerHeight;let mx=0,my=0;const PAL=['255,255,255','255,200,225','210,185,255','175,220,255'];class Star{{constructor(){{this.init()}}init(){{this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*2.2+.15;this.base=Math.random()*.65+.25;this.op=this.base;this.ts=Math.random()*.018+.004;this.tp=Math.random()*Math.PI*2;this.col=PAL[Math.floor(Math.random()*PAL.length)];this.vx=(Math.random()-.5)*.06;this.vy=(Math.random()-.5)*.06;this.layer=Math.random()}}update(){{this.tp+=this.ts;this.op=Math.max(.08,Math.min(1,this.base+Math.sin(this.tp)*.28));const p=this.layer*.018;this.x+=this.vx+mx*p;this.y+=this.vy+my*p;if(this.x<0)this.x=W;if(this.x>W)this.x=0;if(this.y<0)this.y=H;if(this.y>H)this.y=0}}draw(){{sx.beginPath();sx.arc(this.x,this.y,this.r,0,Math.PI*2);sx.fillStyle=`rgba(${{this.col}},${{this.op}})`;sx.fill();if(this.r>1.4){{const g=sx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*4);g.addColorStop(0,`rgba(${{this.col}},${{this.op*.35}})`);g.addColorStop(1,'rgba(0,0,0,0)');sx.beginPath();sx.arc(this.x,this.y,this.r*4,0,Math.PI*2);sx.fillStyle=g;sx.fill()}}}}}}class Streak{{constructor(ox,oy){{this.x=ox??Math.random()*W*.75;this.y=oy??Math.random()*H*.35;this.speed=Math.random()*9+6;this.angle=Math.PI/4+(Math.random()-.5)*.35;this.trail=[];this.op=1;this.alive=true}}update(){{this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed;this.trail.push({{x:this.x,y:this.y}});if(this.trail.length>22)this.trail.shift();this.op-=.022;if(this.op<=0||this.x>W+50||this.y>H+50)this.alive=false}}draw(){{if(this.trail.length<2)return;sx.beginPath();sx.moveTo(this.trail[0].x,this.trail[0].y);for(let i=1;i<this.trail.length;i++)sx.lineTo(this.trail[i].x,this.trail[i].y);const t0=this.trail[0],tN=this.trail[this.trail.length-1];const g=sx.createLinearGradient(t0.x,t0.y,tN.x,tN.y);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,`rgba(255,230,245,${{this.op}})`);sx.strokeStyle=g;sx.lineWidth=1.8;sx.stroke()}}}}const stars=Array.from({{length:420}},()=>new Star());const streaks=[];let lastS=0;function drawNebula(){{const n1=sx.createRadialGradient(W*.18,H*.28,0,W*.18,H*.28,W*.42);n1.addColorStop(0,'rgba(255,100,160,.035)');n1.addColorStop(1,'rgba(0,0,0,0)');sx.fillStyle=n1;sx.fillRect(0,0,W,H);const n2=sx.createRadialGradient(W*.82,H*.72,0,W*.82,H*.72,W*.38);n2.addColorStop(0,'rgba(70,180,255,.04)');n2.addColorStop(1,'rgba(0,0,0,0)');sx.fillStyle=n2;sx.fillRect(0,0,W,H)}}function loopS(t){{sx.clearRect(0,0,W,H);drawNebula();if(t-lastS>4800+Math.random()*4000){{streaks.push(new Streak());lastS=t}}stars.forEach(s=>{{s.update();s.draw()}});for(let i=streaks.length-1;i>=0;i--){{streaks[i].update();streaks[i].draw();if(!streaks[i].alive)streaks.splice(i,1)}}requestAnimationFrame(loopS)}}requestAnimationFrame(loopS);const EM=['💗','💕','✨','💖','💝','🌸','⭐','🌟','💫'];const parts=[];class Part{{constructor(x,y,burst){{this.x=x;this.y=y;this.em=EM[Math.floor(Math.random()*EM.length)];if(burst){{this.vx=(Math.random()-.5)*14;this.vy=(Math.random()-.85)*16;this.grav=.28;this.decay=Math.random()*.016+.01;this.sz=Math.random()*22+10}}else{{this.vx=(Math.random()-.5)*1.4;this.vy=-(Math.random()*1.8+.6);this.grav=-.008;this.decay=.0025+Math.random()*.002;this.sz=Math.random()*14+7}}this.rot=Math.random()*Math.PI*2;this.rs=(Math.random()-.5)*.12;this.life=1}}update(){{this.x+=this.vx;this.y+=this.vy;this.vy+=this.grav;this.vx*=.985;this.rot+=this.rs;this.life-=this.decay}}draw(){{px.save();px.globalAlpha=Math.max(0,this.life);px.translate(this.x,this.y);px.rotate(this.rot);px.font=`${{this.sz}}px Arial`;px.textAlign='center';px.textBaseline='middle';px.fillText(this.em,0,0);px.restore()}}}}let ambT=0;function loopP(t){{px.clearRect(0,0,W,H);if(t-ambT>2200){{parts.push(new Part(Math.random()*W,H+20,false));ambT=t}}for(let i=parts.length-1;i>=0;i--){{parts[i].update();parts[i].draw();if(parts[i].life<=0)parts.splice(i,1)}}requestAnimationFrame(loopP)}}requestAnimationFrame(loopP);const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';mx=(e.clientX-W/2)/W*2;my=(e.clientY-H/2)/H*2}});document.addEventListener('click',e=>{{if(e.target.id!=='btn'){{const ss=new Streak(e.clientX-80,e.clientY-80);ss.angle=Math.PI/4+(Math.random()-.5)*.5;streaks.push(ss)}}}});function sendLove(){{const btn=document.getElementById('btn');const r=btn.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;for(let i=0;i<60;i++)setTimeout(()=>parts.push(new Part(cx,cy,true)),i*18);btn.textContent='💗 Sent with Love 💗';btn.style.cssText+='border-color:rgba(255,107,157,1);box-shadow:0 0 40px rgba(255,107,157,.65);';setTimeout(()=>{{btn.textContent='✨ Feel My Love ✨';btn.style.borderColor='rgba(255,107,157,.55)';btn.style.boxShadow=''}},3200)}}window.addEventListener('resize',()=>{{W=sc.width=pc.width=window.innerWidth;H=sc.height=pc.height=window.innerHeight}});</script></body></html>"""
-
-
-def html_rain(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🌧️</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:linear-gradient(180deg,#0a0e1a 0%,#0d1520 60%,#1a2030 100%);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#d0e8ff;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:14px;height:14px;border-radius:50%;background:rgba(150,200,255,.7);pointer-events:none;transform:translate(-50%,-50%)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,22px)}}.glass{{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:clamp(24px,5vw,48px) clamp(20px,6vw,60px);backdrop-filter:blur(2px);box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);opacity:0;animation:glassFade 1.5s ease forwards 1s}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,10vw,6.5rem);font-weight:700;color:#c8e8ff;text-shadow:0 0 40px rgba(150,200,255,.6);margin-bottom:8px;opacity:0;animation:condense 2s ease forwards 2s}}.sub{{font-size:clamp(.68rem,2vw,.9rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(180,220,255,.45);opacity:0;animation:fup .8s ease forwards 4.2s}}.divider{{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(150,200,255,.4),transparent);margin:.5em auto;opacity:0;animation:fup .8s ease forwards 4.8s}}.msg{{font-size:clamp(.84rem,2.2vw,1.05rem);font-weight:300;line-height:2;color:rgba(200,230,255,.78);opacity:0;animation:fup 1s ease forwards 5.4s}}.msg em{{color:#90c8ff;font-style:italic}}.msg strong{{color:#b8dcff}}.btn{{opacity:0;animation:fup .8s ease forwards 8s;background:transparent;border:1px solid rgba(120,180,255,.4);color:#c8e8ff;font-family:'Raleway',sans-serif;font-size:clamp(.75rem,2vw,.88rem);font-weight:400;letter-spacing:.25em;text-transform:uppercase;padding:12px 36px;border-radius:50px;cursor:pointer;backdrop-filter:blur(4px);transition:all .3s;margin-top:8px}}.btn:hover{{border-color:rgba(150,200,255,.8);box-shadow:0 0 20px rgba(100,170,255,.3);transform:translateY(-2px)}}.glow{{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:200px;background:radial-gradient(ellipse at 50% 100%,rgba(255,160,60,.12),transparent 70%);z-index:2;pointer-events:none}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(150,200,255,.25);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes glassFade{{from{{opacity:0;transform:scale(.96)}}to{{opacity:1;transform:scale(1)}}}}@keyframes condense{{0%{{opacity:0;filter:blur(8px)}}40%{{opacity:.4}}100%{{opacity:1;filter:blur(0)}}}}@keyframes fup{{from{{opacity:0;transform:translateY(14px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="glow"></div><div class="scene"><div class="glass"><div class="title">{name}</div><div class="sub">written on a rainy night</div><div class="divider"></div><p class="msg">On rainy nights like this,<br>when the whole world slows down,<br><em>my thoughts find their way to you</em><br>without even trying.<br><br>You are the warmth I think of<br><strong>when everything outside is cold.</strong><br><br>Somewhere in this rain, <em>{name}</em>,<br>every drop is carrying a little love to you.</p><button class="btn" id="btn" onclick="sendLove()">🌧️ Feel the Warmth 🌧️</button></div></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const drops=[];class Drop{{constructor(init){{this.x=Math.random()*W;this.y=init?Math.random()*H:-10;this.len=Math.random()*18+8;this.speed=Math.random()*14+8;this.op=Math.random()*.35+.1;this.w=Math.random()*.8+.3}}update(){{this.y+=this.speed;this.x+=this.speed*.15;if(this.y>H+20){{this.y=-10;this.x=Math.random()*W}}}}draw(){{ctx.beginPath();ctx.moveTo(this.x,this.y);ctx.lineTo(this.x+this.len*.15,this.y+this.len);ctx.strokeStyle=`rgba(160,210,255,${{this.op}})`;ctx.lineWidth=this.w;ctx.stroke()}}}}for(let i=0;i<220;i++)drops.push(new Drop(true));const splashes=[];class Splash{{constructor(){{this.x=Math.random()*W;this.y=H;this.r=0;this.maxR=Math.random()*6+2;this.op=.3;this.alive=true}}update(){{this.r+=.6;this.op-=.025;if(this.op<=0)this.alive=false}}draw(){{ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.strokeStyle=`rgba(150,200,255,${{this.op}})`;ctx.lineWidth=.8;ctx.stroke()}}}}let lastSplash=0;function loop(t){{ctx.clearRect(0,0,W,H);drops.forEach(d=>{{d.update();d.draw()}});if(t-lastSplash>80+Math.random()*120){{splashes.push(new Splash());lastSplash=t}}for(let i=splashes.length-1;i>=0;i--){{splashes[i].update();splashes[i].draw();if(!splashes[i].alive)splashes.splice(i,1)}}requestAnimationFrame(loop)}}requestAnimationFrame(loop);const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='💙 Warmth Sent 💙';setTimeout(()=>btn.textContent='🌧️ Feel the Warmth 🌧️',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
-
-
-def html_particle(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 💗</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:#080008;min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#fff;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}}.cur{{position:fixed;z-index:9999;width:16px;height:16px;border-radius:50%;background:rgba(255,80,150,.8);pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen}}.ui{{position:fixed;z-index:10;width:100%;top:50%;transform:translateY(-50%);text-align:center;pointer-events:none}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(2.5rem,8vw,5rem);font-weight:700;background:linear-gradient(135deg,#ffb3d0,#ff6b9d,#ff3d7f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;transition:opacity 1.5s ease}}.sub{{font-size:clamp(.7rem,2vw,.9rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(255,180,210,.5);margin-top:8px;opacity:0;transition:opacity 1s ease}}.msg{{max-width:min(480px,88vw);margin:16px auto 0;font-size:clamp(.82rem,2.2vw,1rem);font-weight:300;line-height:1.9;color:rgba(255,200,220,.8);opacity:0;transition:opacity 1.5s ease}}.msg em{{color:#ff9de2;font-style:italic}}.btn{{pointer-events:all;margin-top:20px;display:inline-block;background:transparent;border:1.5px solid rgba(255,107,157,.5);color:#fff;font-family:'Raleway',sans-serif;font-size:clamp(.75rem,2vw,.88rem);font-weight:400;letter-spacing:.22em;text-transform:uppercase;padding:12px 36px;border-radius:50px;cursor:pointer;transition:all .3s;opacity:0}}.btn:hover{{border-color:#ff6b9d;box-shadow:0 0 24px rgba(255,107,157,.5);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(255,150,180,.2);z-index:20}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="ui"><div class="title" id="ttl">{name}</div><div class="sub" id="sub">every particle is a thought of you</div><p class="msg" id="msg">Some things can't be said in words alone —<br>they have to be <em>felt in every particle,</em><br>in every tiny piece of the universe<br>that somehow knows your name.<br><br>This heart is made of<br><em>{name}</em>.</p><button class="btn" id="btn" onclick="scatter()">💗 Scatter & Reunite 💗</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const N=2200,cx=W/2,cy=H/2;function heartPt(t){{const s=Math.min(W,H)*0.018;return{{x:cx+s*16*Math.pow(Math.sin(t),3),y:cy-s*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))}}}}const targets=Array.from({{length:N}},(_,i)=>heartPt(i/N*Math.PI*2));const COLS=['255,60,120','255,100,150','255,140,180','255,180,210','220,80,140'];class P{{constructor(i){{this.x=Math.random()*W;this.y=Math.random()*H;this.tx=targets[i].x;this.ty=targets[i].y;this.col=COLS[Math.floor(Math.random()*COLS.length)];this.r=Math.random()*1.8+.6;this.speed=.04+Math.random()*.03;this.scattered=false;this.ox=this.x;this.oy=this.y}}update(beat){{if(this.scattered){{this.x+=this.vx;this.y+=this.vy;this.vy+=.12;this.vx*=.99;this.life-=.012;if(this.life<=0){{this.x=this.ox=Math.random()*W;this.y=this.oy=-20;this.vx=0;this.vy=0;this.scattered=false}}}}else{{const scale=1+Math.sin(Date.now()*.002)*beat*.06;const tx=cx+(this.tx-cx)*scale;const ty=cy+(this.ty-cy)*scale;this.x+=(tx-this.x)*this.speed;this.y+=(ty-this.y)*this.speed}}}}draw(){{const d=this.scattered?this.life:1;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(${{this.col}},${{d*.85}})`;ctx.fill()}}scatter(){{this.scattered=true;this.life=1;this.vx=(Math.random()-.5)*12;this.vy=(Math.random()-.5)*12-4}}}}const particles=Array.from({{length:N}},(_,i)=>new P(i));let beat=0;function loop(){{ctx.fillStyle='rgba(8,0,8,.18)';ctx.fillRect(0,0,W,H);beat=Math.sin(Date.now()*.0018);particles.forEach(p=>{{p.update(beat);p.draw()}});requestAnimationFrame(loop)}}loop();setTimeout(()=>{{const t=document.getElementById('ttl'),s=document.getElementById('sub'),m=document.getElementById('msg'),b=document.getElementById('btn');t.style.opacity='1';setTimeout(()=>{{s.style.opacity='1';m.style.opacity='1';b.style.opacity='1'}},600)}},3200);function scatter(){{particles.forEach(p=>p.scatter());const btn=document.getElementById('btn');btn.textContent='💗 Reuniting... 💗';setTimeout(()=>btn.textContent='💗 Scatter & Reunite 💗',2500)}}const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+# ── Format rotation ─────────────────────────────────────────────────────────────
+def get_format(ordinal):
+    """Returns 'interactive', 'email', or 'qr'"""
+    if ordinal % 11 == 0:
+        return "email"
+    if ordinal % 7 == 0:
+        return "qr"
+    return "interactive"
 
 
-def html_matrix(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 💻</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Share+Tech+Mono&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:#000;min-height:100vh;overflow:hidden;font-family:'Share Tech Mono',monospace;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}}.cur{{position:fixed;z-index:9999;width:14px;height:14px;border-radius:50%;background:rgba(255,80,180,.9);pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen}}.scene{{position:fixed;z-index:10;width:100%;top:50%;transform:translateY(-50%);text-align:center;padding:20px;pointer-events:none}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3.5rem,12vw,8rem);font-weight:700;color:#fff;text-shadow:0 0 30px rgba(255,100,200,.9),0 0 60px rgba(255,50,180,.5);opacity:0;transition:opacity 2s ease}}.decode{{font-family:'Share Tech Mono',monospace;font-size:clamp(.65rem,1.8vw,.85rem);letter-spacing:.3em;color:rgba(255,80,180,.6);margin-top:6px;opacity:0;transition:opacity 1s ease}}.msg{{max-width:min(520px,88vw);margin:20px auto 0;font-size:clamp(.8rem,2vw,.98rem);font-weight:300;line-height:1.95;color:rgba(255,200,230,.85);font-family:'Raleway',sans-serif;opacity:0;transition:opacity 1.5s ease}}.msg em{{color:#ff80d0;font-style:italic}}.msg strong{{color:#ffb0e0}}.btn{{pointer-events:all;margin-top:22px;display:inline-block;background:rgba(255,20,150,.08);border:1px solid rgba(255,80,180,.5);color:rgba(255,200,230,.9);font-family:'Share Tech Mono',monospace;font-size:clamp(.7rem,1.8vw,.82rem);letter-spacing:.2em;padding:12px 34px;border-radius:4px;cursor:pointer;transition:all .3s;opacity:0}}.btn:hover{{background:rgba(255,20,150,.18);border-color:#ff50b4;box-shadow:0 0 20px rgba(255,50,180,.4);transform:translateY(-1px)}}.ds{{position:fixed;bottom:14px;right:16px;font-size:.62rem;letter-spacing:.15em;color:rgba(255,80,180,.2);z-index:20}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title" id="ttl">{name}</div><div class="decode" id="dec">// DECODING LOVE . . .</div><div class="msg" id="msg">In a world full of noise and code,<br><em>you are the signal that cuts through everything.</em><br><br>No algorithm could ever calculate<br>what you make me feel —<br><strong>because you are beyond any system,</strong><br>any logic, any pattern.<br><br>You are the exception, <em>{name}.</em></div><button class="btn" id="btn" onclick="reDecode()">[ RUN AGAIN ]</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const CHARS='ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ012345789JENISHA♥💗★';const cols=Math.floor(W/22);const drops=Array(cols).fill(1).map(()=>Math.random()*-50);const revealed=new Set();let phase='rain',revealTimer=0;function chooseReveal(){{const centerCol=Math.floor(cols/2);for(let i=-3;i<=3;i++)revealed.add(centerCol+i)}}setTimeout(chooseReveal,3500);function loop(t){{if(phase==='rain'&&t>5000)phase='reveal';ctx.fillStyle=phase==='rain'?'rgba(0,0,0,.06)':'rgba(0,0,0,.04)';ctx.fillRect(0,0,W,H);drops.forEach((y,i)=>{{const isRev=revealed.has(i);const char=CHARS[Math.floor(Math.random()*CHARS.length)];if(isRev&&phase==='reveal'){{ctx.fillStyle='rgba(255,255,255,.95)';ctx.font='bold 18px Dancing Script,cursive'}}else{{const bright=Math.random()>.97;ctx.fillStyle=bright?'rgba(255,220,240,1)':`rgba(255,${{60+Math.floor(Math.random()*80)}},180,${{.4+Math.random()*.4}})`;ctx.font=`${{Math.random()>.95?'bold ':''}}16px Share Tech Mono,monospace`}}ctx.fillText(char,i*22,y*22);if(y*22>H&&Math.random()>.96)drops[i]=0;drops[i]+=isRev?.4:1}});if(phase==='reveal'){{revealTimer++;if(revealTimer===30){{const el=document.getElementById('ttl');el.style.opacity='1';setTimeout(()=>{{document.getElementById('dec').style.opacity='1';document.getElementById('msg').style.opacity='1';document.getElementById('btn').style.opacity='1'}},800)}}}}requestAnimationFrame(loop)}}requestAnimationFrame(loop);function reDecode(){{phase='rain';revealTimer=0;revealed.clear();drops.fill(1);['ttl','dec','msg','btn'].forEach(id=>document.getElementById(id).style.opacity='0');setTimeout(chooseReveal,3500);setTimeout(()=>{{phase='reveal'}},5000)}}const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+# ── Interactive star-hunt page ──────────────────────────────────────────────────
+def html_interactive(theme, name, date_str):
+    p = theme["primary"]
+    s = theme["secondary"]
+    g = theme["glow"]
+    bg = theme["bg"]
+    emojis_js = json.dumps(theme["emojis"])
+    unlock_emoji = theme["unlock_emoji"]
+    hunt_label = theme["hunt_label"]
+    btn_text = theme["btn_text"]
+    msg_lines = theme["message"]
+    # Build message HTML
+    msg_html = ""
+    for line in msg_lines:
+        if line == "":
+            msg_html += "<br>"
+        else:
+            msg_html += line + "<br>"
+
+    # 7 star positions: (left%, top%, size_rem, opacity, color, twinkle_speed)
+    stars_config = [
+        (13, 17, 2.0, 0.92, p,  3.5),
+        (78, 11, 1.4, 0.55, s,  4.2),
+        (62, 74, 1.8, 0.78, p,  2.9),
+        (22, 82, 1.2, 0.38, s,  5.1),
+        (88, 55, 1.6, 0.65, p,  3.8),
+        (45, 38, 1.0, 0.22, s,  6.3),  # hardest — nearly invisible
+        (35, 91, 1.4, 0.48, p,  4.7),
+    ]
+    stars_html = ""
+    for i, (lft, top, sz, op, col, tw) in enumerate(stars_config):
+        stars_html += (
+            f'<div class="cstar" id="cs{i}" '
+            f'style="left:{lft}%;top:{top}%;--sz:{sz}rem;--op:{op};--col:{col};--tw:{tw}s" '
+            f'onclick="collect({i})">✦</div>\n'
+        )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<title>For {name} ✦</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Raleway:ital,wght@0,200;0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+html,body{{width:100%;height:100%;background:{bg};overflow:hidden;font-family:'Raleway',sans-serif;cursor:none}}
+canvas{{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none}}
+#bg{{z-index:1}}#fx{{z-index:6}}
+.cur{{position:fixed;z-index:999;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,rgba({g},.9),transparent 70%);pointer-events:none;transform:translate(-50%,-50%);transition:transform .08s;mix-blend-mode:screen}}
+.cstar{{position:fixed;z-index:10;font-size:var(--sz,1.5rem);opacity:var(--op,.7);color:var(--col,{p});text-shadow:0 0 12px var(--col),0 0 28px var(--col);cursor:pointer;user-select:none;transition:transform .15s,opacity .15s,filter .15s;animation:twinkle var(--tw,3.5s) ease-in-out infinite;transform:translate(-50%,-50%)}}
+.cstar:hover{{transform:translate(-50%,-50%) scale(1.7)!important;opacity:1!important;filter:brightness(2)}}
+.cstar.gone{{display:none}}
+@keyframes twinkle{{0%,100%{{filter:brightness(1)}}50%{{filter:brightness(1.5) drop-shadow(0 0 8px var(--col))}}}}
+.hub{{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:130px;height:130px;z-index:15;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:opacity .8s ease}}
+.prog-svg{{position:absolute;width:130px;height:130px;overflow:visible}}
+.lock{{font-size:2.4rem;z-index:2;animation:lockPulse 2.2s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba({g},.5))}}
+.counter{{font-size:.65rem;font-weight:300;letter-spacing:.25em;color:rgba({g},.6);z-index:2}}
+.dots{{display:flex;gap:5px;z-index:2}}
+.dot{{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba({g},.3);transition:all .35s}}
+.dot.lit{{background:{p};border-color:{p};box-shadow:0 0 8px rgba({g},.8)}}
+@keyframes lockPulse{{0%,100%{{transform:scale(1)}}50%{{transform:scale(1.08)}}}}
+@keyframes lockShake{{0%,100%{{transform:scale(1) rotate(0deg)}}15%{{transform:scale(1.1) rotate(-8deg)}}30%{{transform:scale(1.1) rotate(8deg)}}45%{{transform:scale(1.05) rotate(-5deg)}}60%{{transform:scale(1.05) rotate(5deg)}}}}
+.hint{{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);font-size:.65rem;letter-spacing:.25em;color:rgba({g},.45);z-index:20;pointer-events:none;text-align:center;animation:hintPulse 3s ease-in-out infinite}}
+@keyframes hintPulse{{0%,100%{{opacity:.6}}50%{{opacity:1}}}}
+.card-wrap{{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 1s ease}}
+.card-wrap.visible{{opacity:1;pointer-events:all}}
+.card{{background:rgba(10,5,20,.92);border:1px solid rgba({g},.25);border-radius:20px;padding:clamp(28px,5vw,52px) clamp(24px,5vw,48px);max-width:min(520px,92vw);text-align:center;color:#fff;box-shadow:0 0 60px rgba({g},.12),inset 0 1px 0 rgba({g},.1);backdrop-filter:blur(16px);transform-style:preserve-3d;will-change:transform;transition:box-shadow .1s}}
+.card-name{{font-family:'Dancing Script',cursive;font-size:clamp(2.2rem,8vw,3.6rem);font-weight:700;color:{p};text-shadow:0 0 30px rgba({g},.5);margin-bottom:8px}}
+.card-line{{width:60px;height:1.5px;background:linear-gradient(90deg,transparent,{p},transparent);margin:0 auto 24px}}
+.card-msg{{font-size:clamp(.85rem,2.2vw,1.05rem);font-weight:300;line-height:1.95;color:rgba(255,255,255,.85);min-height:4em}}
+.card-msg em{{color:{p};font-style:italic}}
+.card-msg strong{{font-weight:500;color:{s}}}
+.card-btn{{margin-top:28px;background:transparent;border:1.5px solid rgba({g},.4);color:#fff;font-family:'Raleway',sans-serif;font-size:.82rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;padding:13px 36px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s}}
+.card-btn:hover{{border-color:{p};box-shadow:0 0 24px rgba({g},.5);transform:translateY(-2px)}}
+.ds{{position:fixed;bottom:14px;right:16px;font-size:.62rem;letter-spacing:.15em;color:rgba({g},.25);z-index:60}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div class="cur" id="cur"></div>
+
+{stars_html}
+
+<div class="hub" id="hub">
+  <svg class="prog-svg" viewBox="0 0 130 130">
+    <circle cx="65" cy="65" r="56" fill="none" stroke="rgba({g},.12)" stroke-width="3"/>
+    <circle id="arc" cx="65" cy="65" r="56" fill="none" stroke="{p}"
+      stroke-width="3" stroke-linecap="round"
+      stroke-dasharray="351.86" stroke-dashoffset="351.86"
+      transform="rotate(-90 65 65)"
+      style="transition:stroke-dashoffset .5s ease,filter .3s"/>
+  </svg>
+  <div class="lock" id="lockIcon">🔒</div>
+  <div class="dots" id="dots">
+    {''.join(f'<div class="dot" id="d{i}"></div>' for i in range(7))}
+  </div>
+  <div class="counter" id="ctr">0 / 7</div>
+</div>
+
+<div class="hint" id="hint">{hunt_label}</div>
+
+<div class="card-wrap" id="cardWrap">
+  <div class="card" id="card">
+    <div class="card-name">{name}</div>
+    <div class="card-line"></div>
+    <div class="card-msg" id="cardMsg"></div>
+    <button class="card-btn" onclick="sendLoveBack()">{btn_text}</button>
+  </div>
+</div>
+
+<div class="ds">{date_str}</div>
+
+<script>
+// ── Background ──
+const bgC=document.getElementById('bg'),bgX=bgC.getContext('2d');
+const fxC=document.getElementById('fx'),fxX=fxC.getContext('2d');
+let W=bgC.width=fxC.width=window.innerWidth,H=bgC.height=fxC.height=window.innerHeight;
+
+const STARS=Array.from({{length:340}},()=>{{
+  return{{x:Math.random()*W,y:Math.random()*H,r:.15+Math.random()*1.8,
+    base:.15+Math.random()*.7,tp:Math.random()*Math.PI*2,ts:.003+Math.random()*.015,
+    vx:(Math.random()-.5)*.05,vy:(Math.random()-.5)*.05}};
+}});
+let mx=0,my=0;
+function drawBg(){{
+  bgX.clearRect(0,0,W,H);
+  STARS.forEach(s=>{{
+    s.tp+=s.ts;s.x+=s.vx+mx*.01;s.y+=s.vy+my*.01;
+    if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
+    const op=Math.max(.05,Math.min(1,s.base+Math.sin(s.tp)*.25));
+    bgX.beginPath();bgX.arc(s.x,s.y,s.r,0,Math.PI*2);
+    bgX.fillStyle=`rgba(255,255,255,${{op}})`;bgX.fill();
+  }});
+  requestAnimationFrame(drawBg);
+}}
+drawBg();
+
+// ── Particles ──
+const EMOJIS={emojis_js};
+const parts=[];
+class P{{
+  constructor(x,y,burst){{
+    this.x=x;this.y=y;this.em=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+    if(burst){{this.vx=(Math.random()-.5)*16;this.vy=(Math.random()-.8)*18;this.g=.32;this.decay=.012+Math.random()*.012;this.sz=14+Math.random()*20;}}
+    else{{this.vx=(Math.random()-.5)*1.2;this.vy=-(Math.random()*1.5+.5);this.g=-.006;this.decay=.002+Math.random()*.002;this.sz=8+Math.random()*12;}}
+    this.rot=Math.random()*Math.PI*2;this.rs=(Math.random()-.5)*.1;this.life=1;
+  }}
+  tick(){{this.x+=this.vx;this.y+=this.vy;this.vy+=this.g;this.vx*=.985;this.rot+=this.rs;this.life-=this.decay;}}
+  draw(){{fxX.save();fxX.globalAlpha=Math.max(0,this.life);fxX.translate(this.x,this.y);fxX.rotate(this.rot);fxX.font=`${{this.sz}}px Arial`;fxX.textAlign='center';fxX.textBaseline='middle';fxX.fillText(this.em,0,0);fxX.restore();}}
+}}
+let ambT=0;
+function drawFx(t){{
+  fxX.clearRect(0,0,W,H);
+  if(t-ambT>1800){{parts.push(new P(Math.random()*W,H+20,false));ambT=t;}}
+  for(let i=parts.length-1;i>=0;i--){{parts[i].tick();parts[i].draw();if(parts[i].life<=0)parts.splice(i,1);}}
+  requestAnimationFrame(drawFx);
+}}
+requestAnimationFrame(drawFx);
+
+function burst(x,y,n){{for(let i=0;i<n;i++)setTimeout(()=>parts.push(new P(x,y,true)),i*12);}}
+
+// ── Cursor ──
+const cur=document.getElementById('cur');
+document.addEventListener('mousemove',e=>{{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  mx=(e.clientX-W/2)/W*2;my=(e.clientY-H/2)/H*2;
+}});
+
+// ── Star hunt ──
+let collected=0;
+const TOTAL=7;
+const arc=document.getElementById('arc');
+const FULL=351.86;
+
+function collect(i){{
+  const el=document.getElementById('cs'+i);
+  if(!el||el.classList.contains('gone'))return;
+  el.classList.add('gone');
+
+  // fly clone to hub
+  const r=el.getBoundingClientRect();
+  const clone=el.cloneNode(true);
+  clone.style.cssText=`position:fixed;left:${{r.left}}px;top:${{r.top}}px;z-index:30;transition:all .55s cubic-bezier(.4,0,.2,1);opacity:1;pointer-events:none;font-size:${{parseFloat(getComputedStyle(el).getPropertyValue('--sz'))}}rem`;
+  document.body.appendChild(clone);
+  burst(r.left+r.width/2,r.top+r.height/2,10);
+  requestAnimationFrame(()=>{{
+    clone.style.left='50%';clone.style.top='50%';
+    clone.style.transform='translate(-50%,-50%) scale(.4)';
+    clone.style.opacity='0';
+  }});
+  setTimeout(()=>clone.remove(),600);
+
+  collected++;
+  document.getElementById('d'+(collected-1)).classList.add('lit');
+  document.getElementById('ctr').textContent=collected+' / '+TOTAL;
+  arc.style.strokeDashoffset=FULL-(FULL*collected/TOTAL);
+  arc.style.filter='drop-shadow(0 0 6px {p})';
+
+  if(collected===TOTAL)setTimeout(unlock,600);
+}}
+
+function unlock(){{
+  const hub=document.getElementById('hub');
+  const lock=document.getElementById('lockIcon');
+  lock.style.animation='lockShake .6s ease';
+  setTimeout(()=>{{
+    burst(W/2,H/2,30);
+    setTimeout(()=>{{burst(W*.3,H*.4,20);burst(W*.7,H*.6,20);}},200);
+    lock.textContent='{unlock_emoji}';
+    lock.style.animation='lockPulse 1.5s ease-in-out infinite';
+    setTimeout(()=>{{hub.style.opacity='0';hub.style.pointerEvents='none';}},800);
+    document.getElementById('hint').style.opacity='0';
+    setTimeout(showCard,1400);
+  }},650);
+}}
+
+// ── Card reveal ──
+const MSG=`{msg_html}`;
+function typewrite(el,html,speed){{
+  const tmp=document.createElement('div');tmp.innerHTML=html;
+  const text=tmp.textContent;
+  let i=0;el.innerHTML='';
+  const iv=setInterval(()=>{{
+    if(i>=text.length){{el.innerHTML=html;clearInterval(iv);return;}}
+    el.textContent=text.slice(0,++i);
+  }},speed);
+}}
+function showCard(){{
+  const cw=document.getElementById('cardWrap');
+  cw.classList.add('visible');
+  setTimeout(()=>typewrite(document.getElementById('cardMsg'),MSG,38),400);
+}}
+
+// ── 3D card tilt ──
+const card=document.getElementById('card');
+document.addEventListener('mousemove',e=>{{
+  if(!document.getElementById('cardWrap').classList.contains('visible'))return;
+  const rect=card.getBoundingClientRect();
+  const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+  const dx=(e.clientX-cx)/rect.width,dy=(e.clientY-cy)/rect.height;
+  const tX=dx*14,tY=dy*-14;
+  card.style.transform=`perspective(900px) rotateY(${{tX}}deg) rotateX(${{tY}}deg)`;
+  card.style.boxShadow=`${{-tX*1.5}}px ${{tY*1.5}}px 60px rgba({g},.18),0 0 80px rgba({g},.08)`;
+}});
+document.addEventListener('mouseleave',()=>{{
+  card.style.transform='perspective(900px) rotateY(0deg) rotateX(0deg)';
+}});
+// touch tilt
+document.addEventListener('touchmove',e=>{{
+  if(!document.getElementById('cardWrap').classList.contains('visible'))return;
+  const t=e.touches[0];
+  const rect=card.getBoundingClientRect();
+  const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+  const tX=(t.clientX-cx)/rect.width*12,tY=(t.clientY-cy)/rect.height*-12;
+  card.style.transform=`perspective(900px) rotateY(${{tX}}deg) rotateX(${{tY}}deg)`;
+}},{{passive:true}});
+
+function sendLoveBack(){{
+  for(let i=0;i<5;i++)setTimeout(()=>burst(Math.random()*W,Math.random()*H*.8,18),i*160);
+}}
+
+window.addEventListener('resize',()=>{{
+  W=bgC.width=fxC.width=window.innerWidth;
+  H=bgC.height=fxC.height=window.innerHeight;
+}});
+</script>
+</body>
+</html>"""
 
 
-def html_butterfly(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🦋</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:linear-gradient(180deg,#e8d5f5 0%,#f5e6ff 25%,#fff0f8 55%,#ffe8f0 75%,#ffd6e0 100%);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#4a1a5a;cursor:none}}.cur{{position:fixed;z-index:9999;width:14px;height:14px;border-radius:50%;background:rgba(180,80,220,.7);pointer-events:none;transform:translate(-50%,-50%)}}.meadow{{position:fixed;bottom:0;left:0;width:100%;height:22%;background:linear-gradient(180deg,transparent,rgba(150,220,100,.15) 40%,rgba(100,180,60,.25));z-index:2;pointer-events:none}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(10px,2vh,20px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3.2rem,11vw,7rem);font-weight:700;color:#8b2fc9;text-shadow:0 0 30px rgba(180,80,220,.35);opacity:0;animation:bloom 1.8s ease forwards 1.2s}}.sub{{font-size:clamp(.68rem,2vw,.92rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(140,60,180,.55);opacity:0;animation:fup .8s ease forwards 3.2s}}.hw{{opacity:0;animation:fup .8s ease forwards 3.8s;font-size:clamp(2rem,6vw,3rem)}}.mw{{max-width:min(540px,90vw);opacity:0;animation:fup 1.2s ease forwards 4.6s}}.msg{{font-size:clamp(.84rem,2.2vw,1.06rem);font-weight:300;line-height:2;color:rgba(80,20,100,.75)}}.msg em{{color:#a040d0;font-style:italic}}.msg strong{{color:#7b1fa2}}.btn{{opacity:0;animation:fup .8s ease forwards 7.4s;background:rgba(255,255,255,.55);border:1.5px solid rgba(180,80,220,.45);color:#7b1fa2;font-family:'Raleway',sans-serif;font-size:clamp(.75rem,2vw,.88rem);font-weight:500;letter-spacing:.2em;text-transform:uppercase;padding:12px 36px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s}}.btn:hover{{background:rgba(200,150,255,.25);border-color:#a040d0;box-shadow:0 0 20px rgba(160,64,208,.3);transform:translateY(-2px)}}.ds{{position:fixed;bottom:14px;right:16px;font-size:.66rem;letter-spacing:.14em;color:rgba(140,60,180,.3);z-index:20;opacity:0;animation:fi 1s ease forwards 10s}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:3;pointer-events:none}}@keyframes bloom{{from{{opacity:0;transform:scale(.75);filter:blur(10px)}}to{{opacity:1;transform:scale(1);filter:blur(0)}}}}@keyframes fup{{from{{opacity:0;transform:translateY(14px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="meadow"></div><div class="scene"><div class="title">{name}</div><div class="sub">a garden grows for you</div><div class="hw">🦋</div><div class="mw"><p class="msg">They say when a butterfly crosses your path,<br>something beautiful is about to happen.<br><br>For me, <em>that butterfly is you</em> —<br>always arriving at the right moment,<br><strong>turning everything around you into something wonderful.</strong><br><br>This garden blooms because of you, <em>{name}.</em></p></div><button class="btn" id="btn" onclick="releaseButterflies()">🦋 Release More 🦋</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const COLS=['#e040fb','#ab47bc','#ff80ab','#40c4ff','#69f0ae','#ffca28','#ff6e40'];class Butterfly{{constructor(rush){{this.cx=Math.random()*W;this.cy=Math.random()*H*.75+H*.05;this.t=Math.random()*Math.PI*2;this.speed=(Math.random()*.008+.004)*(rush?3:1);this.rx=60+Math.random()*100;this.ry=this.rx*.35;this.wt=Math.random()*Math.PI*2;this.ws=.12+Math.random()*.1;this.col=COLS[Math.floor(Math.random()*COLS.length)];this.sz=18+Math.random()*16;this.x=this.cx;this.y=this.cy;this.rush=rush;this.life=rush?1:999}}update(){{this.t+=this.speed;this.wt+=this.ws;this.x=this.cx+Math.sin(this.t)*this.rx;this.y=this.cy+Math.sin(this.t*2)*this.ry+(rush?-this.speed*120:0);if(this.rush)this.life-=.008}}draw(){{const wf=Math.abs(Math.sin(this.wt));const s=this.sz;ctx.save();ctx.translate(this.x,this.y);ctx.globalAlpha=this.rush?this.life:.85;const col=this.col;ctx.fillStyle=col+'cc';ctx.beginPath();ctx.ellipse(-s*wf*.7,-s*.3,s*wf,s*.55,-.45,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(s*wf*.7,-s*.3,s*wf,s*.55,.45,0,Math.PI*2);ctx.fill();ctx.fillStyle=col+'66';ctx.beginPath();ctx.ellipse(-s*wf*.5,s*.2,s*wf*.6,s*.35,-.3,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(s*wf*.5,s*.2,s*wf*.6,s*.35,.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#333';ctx.beginPath();ctx.ellipse(0,0,2,s*.45,0,0,Math.PI*2);ctx.fill();ctx.restore()}}}}const butterflies=Array.from({{length:10}},()=>new Butterfly(false));function loop(){{ctx.clearRect(0,0,W,H);for(let i=butterflies.length-1;i>=0;i--){{const b=butterflies[i];b.update();b.draw();if(b.rush&&b.life<=0)butterflies.splice(i,1)}}requestAnimationFrame(loop)}}loop();function releaseButterflies(){{for(let i=0;i<12;i++)setTimeout(()=>butterflies.push(new Butterfly(true)),i*80);const btn=document.getElementById('btn');btn.textContent='🦋 Flying... 🦋';setTimeout(()=>btn.textContent='🦋 Release More 🦋',2500)}}const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+# ── Flirty professional email format ───────────────────────────────────────────
+def html_email(theme, name, date_str):
+    p = theme["primary"]
+    s = theme["secondary"]
+    g = theme["glow"]
+
+    # Random "from" details
+    subjects = [
+        f"RE: RE: RE: You — a follow-up",
+        f"Action Required: You Are Too Beautiful",
+        f"FWD: Thinking About You Again",
+        f"URGENT: I Miss You",
+        f"Monthly Review: Why You're Extraordinary",
+        f"Reminder: You Are My Favourite Person",
+    ]
+    import hashlib
+    day_hash = int(hashlib.md5(date_str.encode()).hexdigest(), 16)
+    subject = subjects[day_hash % len(subjects)]
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>For {name} — 1 New Message</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet"/>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:#0e0e12;font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}}
+.shell{{width:min(780px,100%);background:#141418;border-radius:12px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06)}}
+.topbar{{background:#1a1a20;padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.06)}}
+.dots span{{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}}
+.dots .r{{background:#ff5f56}}.dots .y{{background:#ffbd2e}}.dots .gr{{background:#27c93f}}
+.topbar-title{{flex:1;text-align:center;font-size:.78rem;color:rgba(255,255,255,.35);letter-spacing:.08em}}
+.sidebar{{display:flex}}
+.nav{{background:#111115;width:200px;min-width:200px;padding:20px 0;border-right:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:2px}}
+.nav-item{{padding:9px 20px;font-size:.8rem;color:rgba(255,255,255,.35);cursor:pointer;display:flex;align-items:center;gap:10px;border-radius:0;transition:background .2s}}
+.nav-item.active{{background:rgba({g},.1);color:{p};border-left:2px solid {p}}}
+.badge{{background:{p};color:#000;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:auto}}
+.main{{flex:1;display:flex;flex-direction:column}}
+.thread-header{{padding:22px 28px 16px;border-bottom:1px solid rgba(255,255,255,.06)}}
+.subject{{font-size:1.15rem;font-weight:600;color:rgba(255,255,255,.92);margin-bottom:8px}}
+.meta{{display:flex;gap:8px;flex-wrap:wrap;font-size:.75rem;color:rgba(255,255,255,.35)}}
+.tag{{background:rgba({g},.12);color:{p};padding:2px 10px;border-radius:10px;font-size:.68rem}}
+.email-body{{padding:28px;flex:1}}
+.from-row{{display:flex;align-items:center;gap:12px;margin-bottom:24px}}
+.avatar{{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,{p},{s});display:flex;align-items:center;justify-content:center;font-family:'Dancing Script',cursive;font-weight:700;font-size:1.2rem;color:#000;flex-shrink:0}}
+.from-info .name{{font-size:.88rem;font-weight:500;color:rgba(255,255,255,.85)}}
+.from-info .addr{{font-size:.72rem;color:rgba(255,255,255,.3);margin-top:1px}}
+.timestamp{{margin-left:auto;font-size:.7rem;color:rgba(255,255,255,.25)}}
+.letter{{font-size:.9rem;line-height:1.9;color:rgba(255,255,255,.75);white-space:pre-line}}
+.letter .salutation{{font-size:1.05rem;font-weight:500;color:rgba(255,255,255,.9);margin-bottom:16px}}
+.letter .highlight{{color:{p};font-style:italic}}
+.letter .closing{{margin-top:20px;font-size:.88rem;color:rgba(255,255,255,.6)}}
+.letter .sig{{font-family:'Dancing Script',cursive;font-size:1.5rem;color:{p};margin-top:6px}}
+.actions{{padding:16px 28px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:10px}}
+.btn{{background:transparent;border:1px solid rgba({g},.35);color:{p};font-family:'Inter',sans-serif;font-size:.75rem;letter-spacing:.1em;padding:9px 20px;border-radius:8px;cursor:pointer;transition:all .25s}}
+.btn:hover{{background:rgba({g},.1);border-color:{p};box-shadow:0 0 16px rgba({g},.25)}}
+.btn.primary{{background:rgba({g},.15);border-color:{p}}}
+.notification{{position:fixed;top:20px;right:20px;background:#1e1e24;border:1px solid rgba({g},.3);border-radius:10px;padding:14px 18px;font-size:.78rem;color:rgba(255,255,255,.7);box-shadow:0 8px 32px rgba(0,0,0,.4);opacity:0;transform:translateY(-8px);transition:all .4s;z-index:100;max-width:260px}}
+.notification.show{{opacity:1;transform:translateY(0)}}
+.notification .nhead{{color:{p};font-weight:500;margin-bottom:3px}}
+@media(max-width:600px){{.nav{{display:none}}.topbar-title{{font-size:.68rem}}}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="dots"><span class="r"></span><span class="y"></span><span class="gr"></span></div>
+    <div class="topbar-title">💗 Inbox — 1 Unread</div>
+  </div>
+  <div class="sidebar">
+    <div class="nav">
+      <div class="nav-item active">📥 Inbox <span class="badge">1</span></div>
+      <div class="nav-item">⭐ Starred</div>
+      <div class="nav-item">📤 Sent</div>
+      <div class="nav-item">💗 Loved</div>
+      <div class="nav-item">📁 Archive</div>
+    </div>
+    <div class="main">
+      <div class="thread-header">
+        <div class="subject">{subject}</div>
+        <div class="meta">
+          <span class="tag">💗 Personal</span>
+          <span class="tag">⭐ Important</span>
+          <span>{date_str}</span>
+        </div>
+      </div>
+      <div class="email-body">
+        <div class="from-row">
+          <div class="avatar">D</div>
+          <div class="from-info">
+            <div class="name">Dipesh Ray G</div>
+            <div class="addr">dipesh.ray.g@gmail.com</div>
+          </div>
+          <div class="timestamp">Today, just now</div>
+        </div>
+        <div class="letter">
+<span class="salutation">Dear {name},</span>
+I am reaching out to formally notify you of several unresolved matters
+that have been pending on my end for some time.
+
+First and most critically: <span class="highlight">you have been on my mind constantly,</span>
+and I have been unable to resolve this through normal channels.
+I have tried distraction, productivity, and reasonable prioritisation.
+None of these have worked.
+
+Upon review, I believe the root cause is that you are, objectively,
+<span class="highlight">too wonderful to simply stop thinking about.</span>
+This is not a complaint. This is a formal acknowledgment.
+
+Additionally, I would like to flag that your smile constitutes
+an unreasonable interruption to my cognitive workflow.
+Further investigation is recommended (preferably in person).
+
+Please consider this message a standing invitation —
+for coffee, for conversation, for any format that gets me
+<span class="highlight">a little more of your time.</span>
+
+I look forward to your earliest possible reply.
+
+<span class="closing">With the highest professional regard (and considerably more),</span>
+<span class="sig">Dipesh</span>
+<span style="font-size:.72rem;color:rgba(255,255,255,.25);margin-top:4px;display:block">— {date_str}</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" onclick="reply()">💗 Reply with Love</button>
+        <button class="btn" onclick="forward()">✨ Forward to My Heart</button>
+        <button class="btn" onclick="archive()">⭐ Star This</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="notification" id="notif">
+  <div class="nhead">💗 Message Delivered</div>
+  <div id="notifMsg">Preparing response...</div>
+</div>
+<script>
+const replies=[
+  "Reply sent: 'Read & felt every word 💗'",
+  "Forwarded to: every corner of my heart ✨",
+  "Starred ⭐ — permanently unforgettable",
+  "Marked as: My Favourite Email Ever 💕",
+  "Auto-reply set: 'Same. Always.' 🌸",
+];
+let ri=0;
+function showNotif(msg){{
+  const n=document.getElementById('notif');
+  document.getElementById('notifMsg').textContent=msg;
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),3000);
+}}
+function reply(){{showNotif(replies[ri++%replies.length]);}}
+function forward(){{showNotif("Forwarded to: every corner of my heart ✨");}}
+function archive(){{showNotif("Starred ⭐ — permanently unforgettable");}}
+</script>
+</body>
+</html>"""
 
 
-def html_campfire(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🔥</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:radial-gradient(ellipse at 50% 110%,#1a0a00 0%,#0a0500 40%,#020202 100%);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#ffd0a0;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:14px;height:14px;border-radius:50%;background:rgba(255,160,50,.85);pointer-events:none;transform:translate(-50%,-50%)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,22px);padding-bottom:35vh}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;color:#ffc870;text-shadow:0 0 30px rgba(255,160,40,.7),0 0 60px rgba(255,100,0,.4);opacity:0;animation:rise 2s ease forwards 2s}}.sub{{font-size:clamp(.68rem,2vw,.9rem);letter-spacing:.42em;text-transform:uppercase;color:rgba(255,180,80,.45);opacity:0;animation:fup .8s ease forwards 4.2s}}.mw{{max-width:min(520px,90vw);opacity:0;animation:fup 1.2s ease forwards 5s}}.msg{{font-size:clamp(.84rem,2.2vw,1.05rem);font-weight:300;line-height:2;color:rgba(255,220,170,.8)}}.msg em{{color:#ffaa50;font-style:italic}}.msg strong{{color:#ffd090}}.btn{{opacity:0;animation:fup .8s ease forwards 7.8s;background:transparent;border:1px solid rgba(255,160,50,.45);color:#ffc870;font-family:'Raleway',sans-serif;font-size:clamp(.75rem,2vw,.88rem);font-weight:400;letter-spacing:.22em;text-transform:uppercase;padding:12px 36px;border-radius:50px;cursor:pointer;backdrop-filter:blur(4px);transition:all .3s}}.btn:hover{{border-color:rgba(255,160,50,.9);box-shadow:0 0 20px rgba(255,120,30,.4);transform:translateY(-2px)}}.ds{{position:fixed;bottom:14px;right:16px;font-size:.66rem;letter-spacing:.14em;color:rgba(255,160,50,.2);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes rise{{from{{opacity:0;filter:blur(12px);transform:translateY(20px)}}to{{opacity:1;filter:blur(0);transform:translateY(0)}}}}@keyframes fup{{from{{opacity:0;transform:translateY(14px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">somewhere under the stars</div><div class="mw"><p class="msg">There's something about a fire at night —<br>the way it pulls people close,<br><em>the way the world gets smaller</em><br>and only what matters stays.<br><br>In every crackling ember I think of you,<br><strong>warm and bright and impossible to look away from.</strong><br><br>Wherever you are tonight, <em>{name}</em>,<br>I hope you feel this warmth.</p></div><button class="btn" id="btn" onclick="stoke()">🔥 Stoke the Fire 🔥</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const FY=H*.78;const stars=Array.from({{length:180}},()=>{{return{{x:Math.random()*W,y:Math.random()*H*.65,r:Math.random()*1.4+.2,base:Math.random()*.6+.2,tp:Math.random()*Math.PI*2,ts:Math.random()*.02+.005}}}});class Ember{{constructor(burst){{this.reset(burst)}}reset(burst){{this.x=W*.5+(Math.random()-.5)*(burst?120:50);this.y=FY-(burst?0:Math.random()*20);this.vx=(Math.random()-.5)*(burst?4:1.5);this.vy=-(Math.random()*(burst?7:4)+2);this.life=1;this.decay=Math.random()*.012+(burst?.018:.006);this.r=Math.random()*2.5+.8;this.isEmber=Math.random()>.4}}update(){{this.x+=this.vx+Math.sin(Date.now()*.002+this.x*.01)*.4;this.y+=this.vy;this.vy+=.04;this.life-=this.decay;if(this.life<=0)this.reset(false)}}draw(){{const h=this.isEmber?25:45;const s=this.isEmber?100:90;const l=this.isEmber?60:55;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`hsla(${{h+this.life*15}},${{s}}%,${{l}}%,${{this.life}})`;ctx.fill();if(this.r>1.5){{const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*4);g.addColorStop(0,`hsla(${{h}},${{s}}%,${{l}}%,${{this.life*.3}})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(this.x,this.y,this.r*4,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}}}}}}const embers=Array.from({{length:120}},()=>new Ember(false));function drawFire(t){{for(let layer=2;layer>=0;layer--){{const wobble=Math.sin(t*.0018+layer)*18+Math.cos(t*.0012)*10;const h=180-layer*45,fw=55-layer*14;const fy2=FY+10;const grad=ctx.createRadialGradient(W*.5+wobble*.3,fy2,5,W*.5+wobble*.3,fy2,h);const cols=[['rgba(255,255,200,.9)','rgba(255,180,0,.7)','rgba(255,60,0,.4)'],['rgba(255,220,100,.7)','rgba(255,120,0,.5)','rgba(200,30,0,.3)'],['rgba(255,150,50,.5)','rgba(200,50,0,.3)','rgba(0,0,0,0)']];grad.addColorStop(0,cols[layer][0]);grad.addColorStop(.45,cols[layer][1]);grad.addColorStop(1,cols[layer][2]);ctx.beginPath();ctx.ellipse(W*.5+wobble*.3,fy2,fw,h,0,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill()}}const logGrad=ctx.createLinearGradient(W*.5-60,FY,W*.5+60,FY+12);logGrad.addColorStop(0,'#2a1a08');logGrad.addColorStop(.5,'#3d2510');logGrad.addColorStop(1,'#2a1a08');ctx.fillStyle=logGrad;ctx.beginPath();ctx.ellipse(W*.5,FY+6,65,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1a0e06';ctx.beginPath();ctx.ellipse(W*.5-20,FY+10,55,6,.3,0,Math.PI*2);ctx.fill()}}function drawGlow(t){{const wobble=Math.sin(t*.001)*10;const g=ctx.createRadialGradient(W*.5+wobble,FY,0,W*.5+wobble,FY,W*.45);g.addColorStop(0,'rgba(255,120,20,.12)');g.addColorStop(.3,'rgba(255,80,10,.06)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}}function loop(t){{ctx.clearRect(0,0,W,H);stars.forEach(s=>{{s.tp+=s.ts;const op=s.base+Math.sin(s.tp)*.2;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,240,200,${{op}})`;ctx.fill()}});drawGlow(t);drawFire(t);embers.forEach(e=>{{e.update();e.draw()}});requestAnimationFrame(loop)}}requestAnimationFrame(loop);function stoke(){{for(let i=0;i<30;i++)setTimeout(()=>embers.push(new Ember(true)),i*30);const btn=document.getElementById('btn');btn.textContent='🔥 Burning Bright 🔥';setTimeout(()=>btn.textContent='🔥 Stoke the Fire 🔥',2500)}}const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;stars.length=0;for(let i=0;i<180;i++)stars.push({{x:Math.random()*W,y:Math.random()*H*.65,r:Math.random()*1.4+.2,base:Math.random()*.6+.2,tp:Math.random()*Math.PI*2,ts:Math.random()*.02+.005}})}});</script></body></html>"""
+# ── Heart QR code format ────────────────────────────────────────────────────────
+def html_qr(theme, name, date_str, url):
+    p = theme["primary"]
+    s = theme["secondary"]
+    g = theme["glow"]
+    bg = theme["bg"]
 
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>For {name} — Scan Me 💗</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"><\/script>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:{bg};min-height:100vh;font-family:'Raleway',sans-serif;color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}}
+.scene{{display:flex;flex-direction:column;align-items:center;gap:28px;padding:32px;text-align:center;z-index:10;position:relative}}
+.title{{font-family:'Dancing Script',cursive;font-size:clamp(2.5rem,9vw,5rem);color:{p};text-shadow:0 0 30px rgba({g},.5);opacity:0;animation:fadeUp 1s ease forwards .5s}}
+.sub{{font-size:.75rem;letter-spacing:.4em;text-transform:uppercase;color:rgba({g},.5);opacity:0;animation:fadeUp 1s ease forwards 1.2s}}
+.heart-wrap{{position:relative;width:260px;height:260px;opacity:0;animation:fadeUp 1.2s ease forwards 1.8s}}
+#heartCanvas{{position:absolute;top:0;left:0}}
+#qrCanvas{{display:none}}
+.caption{{font-size:.8rem;font-weight:300;line-height:1.8;color:rgba(255,255,255,.65);max-width:320px;opacity:0;animation:fadeUp 1s ease forwards 2.8s}}
+.caption em{{color:{p}}}
+.pulse{{animation:pulse 2s ease-in-out infinite 3s}}
+@keyframes fadeUp{{from{{opacity:0;transform:translateY(20px)}}to{{opacity:1;transform:translateY(0)}}}}
+@keyframes pulse{{0%,100%{{transform:scale(1)}}50%{{transform:scale(1.04)}}}}
+canvas#bg{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}
+.scene{{z-index:10}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="scene">
+  <div class="title">{name}</div>
+  <div class="sub">scan this with your heart</div>
+  <div class="heart-wrap pulse">
+    <canvas id="qrCanvas" width="200" height="200"></canvas>
+    <canvas id="heartCanvas" width="260" height="260"></canvas>
+  </div>
+  <div class="caption">
+    A secret message lives inside this heart.<br>
+    <em>Point your camera at it to open it.</em><br>
+    <br>
+    Made just for you — {date_str}
+  </div>
+</div>
+<script>
+// Draw background stars
+const bg=document.getElementById('bg'),bx=bg.getContext('2d');
+let W=bg.width=window.innerWidth,H=bg.height=window.innerHeight;
+const ST=Array.from({{length:280}},()=>{{return{{x:Math.random()*W,y:Math.random()*H,r:.1+Math.random()*1.6,op:Math.random()*.6+.2,tp:Math.random()*Math.PI*2,ts:.004+Math.random()*.01}}}});
+function drawBg(){{bx.clearRect(0,0,W,H);ST.forEach(s=>{{s.tp+=s.ts;const op=Math.max(.05,s.op+Math.sin(s.tp)*.2);bx.beginPath();bx.arc(s.x,s.y,s.r,0,Math.PI*2);bx.fillStyle=`rgba(255,255,255,${{op}})`;bx.fill()}});requestAnimationFrame(drawBg);}}
+drawBg();
 
-def html_sakura(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🌸</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:linear-gradient(160deg,#fff0f5,#ffe4f0 40%,#ffd6e8);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#5a1a3a;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:16px;height:16px;border-radius:50%;background:rgba(255,107,157,.7);pointer-events:none;transform:translate(-50%,-50%)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,24px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;color:#c0396b;text-shadow:0 0 40px rgba(255,100,150,.4);opacity:0;animation:bloom 1.8s ease forwards 1.5s}}.sub{{font-size:clamp(.7rem,2vw,.95rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(160,60,100,.6);opacity:0;animation:fup 1s ease forwards 3.5s}}.hw{{opacity:0;animation:fup .8s ease forwards 4.2s}}.hi{{font-size:clamp(2rem,6vw,3.2rem);display:inline-block;animation:swing 2s ease-in-out infinite 4.2s}}.mw{{max-width:min(560px,90vw);opacity:0;animation:fup 1.2s ease forwards 5.2s}}.msg{{font-size:clamp(.86rem,2.3vw,1.08rem);font-weight:300;line-height:2;color:rgba(80,20,50,.8)}}.msg em{{color:#d44070;font-style:italic}}.msg strong{{color:#8b1a4a}}.btn{{opacity:0;animation:fup .8s ease forwards 8s;background:rgba(255,255,255,.6);border:1.5px solid rgba(200,60,100,.5);color:#8b1a4a;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2vw,.9rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:13px 38px;border-radius:50px;cursor:pointer;backdrop-filter:blur(10px);transition:all .3s}}.btn:hover{{background:rgba(255,150,180,.2);border-color:#d44070;box-shadow:0 0 24px rgba(212,64,112,.3);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(160,60,100,.4);z-index:20;opacity:0;animation:fi 1s ease forwards 10s}}@keyframes bloom{{from{{opacity:0;transform:scale(.7);filter:blur(12px)}}to{{opacity:1;transform:scale(1);filter:blur(0)}}}}@keyframes fup{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes swing{{0%,100%{{transform:rotate(-8deg)}}50%{{transform:rotate(8deg)}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">a garden blooms for you</div><div class="hw"><span class="hi">🌸</span></div><div class="mw"><p class="msg">Like cherry blossoms that bloom only once a year,<br><em>you are that rare and beautiful thing</em><br>I never want to stop looking at.<br><br>Every petal that falls reminds me<br>how <strong>gently and completely</strong><br>you've filled my world with colour,<br><em>{name}.</em></p></div><button class="btn" id="btn" onclick="sendLove()">🌸 Bloom with Love 🌸</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const petals=[];const PCOLS=['rgba(255,182,210,.8)','rgba(255,150,190,.75)','rgba(255,210,225,.85)','rgba(240,160,200,.7)'];class Petal{{constructor(){{this.reset(true)}}reset(init){{this.x=Math.random()*W;this.y=init?Math.random()*H:-20;this.size=Math.random()*14+7;this.speed=Math.random()*1.5+.5;this.wind=Math.random()*.8-.4;this.wobble=Math.random()*Math.PI*2;this.wobbleSpeed=Math.random()*.04+.01;this.rot=Math.random()*Math.PI*2;this.rotS=(Math.random()-.5)*.06;this.col=PCOLS[Math.floor(Math.random()*PCOLS.length)];this.op=Math.random()*.6+.3}}update(){{this.y+=this.speed;this.wobble+=this.wobbleSpeed;this.x+=this.wind+Math.sin(this.wobble)*.8;this.rot+=this.rotS;if(this.y>H+20)this.reset(false)}}draw(){{ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.rot);ctx.globalAlpha=this.op;ctx.fillStyle=this.col;ctx.beginPath();ctx.ellipse(0,0,this.size/2,this.size,0,0,Math.PI*2);ctx.fill();ctx.restore()}}}}for(let i=0;i<120;i++)petals.push(new Petal());function loop(){{ctx.clearRect(0,0,W,H);petals.forEach(p=>{{p.update();p.draw()}});requestAnimationFrame(loop)}}loop();const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='💗 With All My Love 💗';setTimeout(()=>btn.textContent='🌸 Bloom with Love 🌸',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+// Generate QR then draw heart-clipped version
+const TARGET_URL = "{url}";
+const qrC=document.getElementById('qrCanvas');
+const hC=document.getElementById('heartCanvas');
+const hX=hC.getContext('2d');
+const S=260;
 
+QRCode.toCanvas(qrC,TARGET_URL,{{width:200,margin:1,color:{{dark:'#000000',light:'#ffffff'}}}},function(err){{
+  if(err)return;
+  drawHeartQR();
+}});
 
-def html_ocean(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🌊</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:linear-gradient(180deg,#001428,#002850 30%,#003d70 60%,#004d88);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#e0f4ff;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:16px;height:16px;border-radius:50%;background:rgba(100,200,255,.8);pointer-events:none;transform:translate(-50%,-50%)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,24px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;background:linear-gradient(135deg,#a0e8ff,#60c8ff,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;animation:fup 1.8s ease forwards 2s}}.sub{{font-size:clamp(.7rem,2vw,.95rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(160,220,255,.55);opacity:0;animation:fup 1s ease forwards 4s}}.hw{{opacity:0;animation:fup .8s ease forwards 4.8s}}.hi{{font-size:clamp(2rem,6vw,3.2rem);display:inline-block;animation:wave 2.5s ease-in-out infinite 4.8s}}.mw{{max-width:min(560px,90vw);opacity:0;animation:fup 1.2s ease forwards 5.8s}}.msg{{font-size:clamp(.86rem,2.3vw,1.08rem);font-weight:300;line-height:2;color:rgba(220,240,255,.82)}}.msg em{{color:#80d8ff;font-style:italic}}.msg strong{{color:#b0e8ff}}.btn{{opacity:0;animation:fup .8s ease forwards 8.5s;background:transparent;border:1.5px solid rgba(100,200,255,.5);color:#e0f4ff;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2vw,.9rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:13px 38px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s}}.btn:hover{{border-color:#80d8ff;box-shadow:0 0 24px rgba(80,180,255,.4);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(160,220,255,.3);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes fup{{from{{opacity:0;transform:translateY(18px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes wave{{0%,100%{{transform:translateY(0) rotate(-5deg)}}50%{{transform:translateY(-8px) rotate(5deg)}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">deep as the ocean</div><div class="hw"><span class="hi">🌊</span></div><div class="mw"><p class="msg">Like the ocean has no end,<br><em>what I feel for you has no boundary.</em><br><br>In the stillness of the deep water,<br>in the crash of every wave —<br><strong>every rhythm, every tide</strong><br>finds its way back to you,<br><em>{name}.</em></p></div><button class="btn" id="btn" onclick="sendLove()">🌊 Ride the Wave 🌊</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;let t=0;const bubbles=[];class Bubble{{constructor(){{this.x=Math.random()*W;this.y=H+20;this.r=Math.random()*6+2;this.speed=Math.random()*1.2+.4;this.wobble=Math.random()*Math.PI*2;this.ws=Math.random()*.04+.01;this.op=Math.random()*.5+.2}}update(){{this.y-=this.speed;this.wobble+=this.ws;this.x+=Math.sin(this.wobble)*.6;this.op-=.002;if(this.y<-10||this.op<=0){{this.y=H+20;this.x=Math.random()*W;this.op=Math.random()*.5+.2}}}}draw(){{ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.strokeStyle=`rgba(150,220,255,${{this.op}})`;ctx.lineWidth=1;ctx.stroke()}}}}for(let i=0;i<80;i++)bubbles.push(new Bubble());function drawWaves(){{for(let w=0;w<3;w++){{const spd=(.0008+w*.0003)*t,amp=12+w*8,y=H*.75+w*30;ctx.beginPath();ctx.moveTo(0,y);for(let x=0;x<=W;x+=4)ctx.lineTo(x,y+Math.sin(x*.012+spd)*amp+Math.sin(x*.024+spd*1.5)*amp*.5);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();const g=ctx.createLinearGradient(0,y,0,H);g.addColorStop(0,`rgba(0,100,160,${{.25-w*.06}})`);g.addColorStop(1,'rgba(0,60,120,0)');ctx.fillStyle=g;ctx.fill()}}}}function loop(ts){{t=ts;ctx.clearRect(0,0,W,H);drawWaves();bubbles.forEach(b=>{{b.update();b.draw()}});requestAnimationFrame(loop)}}loop(0);const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='💙 Endless as the Ocean 💙';setTimeout(()=>btn.textContent='🌊 Ride the Wave 🌊',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+function heartPath(ctx,cx,cy,size){{
+  const s=size/2;
+  ctx.beginPath();
+  ctx.moveTo(cx,cy+s*.4);
+  ctx.bezierCurveTo(cx,cy,cx-s*1.2,cy-s*.6,cx-s*1.2,cy-s*.1);
+  ctx.bezierCurveTo(cx-s*1.2,cy-s*.8,cx,cy-s*.8,cx,cy-s*.2);
+  ctx.bezierCurveTo(cx,cy-s*.8,cx+s*1.2,cy-s*.8,cx+s*1.2,cy-s*.1);
+  ctx.bezierCurveTo(cx+s*1.2,cy-s*.6,cx,cy,cx,cy+s*.4);
+  ctx.closePath();
+}}
 
+function drawHeartQR(){{
+  // clear
+  hX.clearRect(0,0,S,S);
 
-def html_firefly(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} ✨</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:radial-gradient(ellipse at 50% 80%,#0a1a08,#060f04 60%,#020804);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#d4ffb0;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:14px;height:14px;border-radius:50%;background:rgba(180,255,100,.8);pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(180,255,100,.6)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,24px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;color:#c8ff80;text-shadow:0 0 40px rgba(150,255,80,.5);opacity:0;animation:glow 2s ease forwards 2s}}.sub{{font-size:clamp(.7rem,2vw,.95rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(180,255,120,.45);opacity:0;animation:fup 1s ease forwards 4.2s}}.hw{{opacity:0;animation:fup .8s ease forwards 5s}}.hi{{font-size:clamp(2rem,6vw,3.2rem);display:inline-block;animation:drift 3s ease-in-out infinite 5s;filter:drop-shadow(0 0 12px rgba(255,220,100,.8))}}.mw{{max-width:min(560px,90vw);opacity:0;animation:fup 1.2s ease forwards 6s}}.msg{{font-size:clamp(.86rem,2.3vw,1.08rem);font-weight:300;line-height:2;color:rgba(200,255,160,.8)}}.msg em{{color:#b0ff60;font-style:italic}}.msg strong{{color:#d8ff90}}.btn{{opacity:0;animation:fup .8s ease forwards 8.8s;background:transparent;border:1.5px solid rgba(150,255,80,.45);color:#d4ffb0;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2vw,.9rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:13px 38px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s}}.btn:hover{{border-color:rgba(150,255,80,.9);box-shadow:0 0 24px rgba(120,220,60,.4);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(150,255,80,.25);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes glow{{from{{opacity:0;filter:blur(20px)}}to{{opacity:1;filter:blur(0)}}}}@keyframes fup{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes drift{{0%,100%{{transform:translateY(0) translateX(0)}}33%{{transform:translateY(-6px) translateX(4px)}}66%{{transform:translateY(4px) translateX(-4px)}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">you light up the dark</div><div class="hw"><span class="hi">✨</span></div><div class="mw"><p class="msg">In the quiet of a dark forest night,<br><em>fireflies remind me of you —</em><br>small, soft, impossible to ignore.<br><br>You carry a light inside you<br>that <strong>turns ordinary nights</strong> into magic.<br><br><em>{name}</em>, you are that light in my world.</p></div><button class="btn" id="btn" onclick="sendLove()">✨ Spark My World ✨</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const flies=[];class Fly{{constructor(){{this.reset()}}reset(){{this.x=Math.random()*W;this.y=Math.random()*H*.85+H*.1;this.tx=this.x+(Math.random()-.5)*120;this.ty=this.y+(Math.random()-.5)*120;this.op=0;this.maxOp=Math.random()*.7+.3;this.phase='in';this.speed=Math.random()*.015+.005}}update(){{const dx=this.tx-this.x,dy=this.ty-this.y;this.x+=dx*.02;this.y+=dy*.02;if(this.phase==='in'){{this.op+=.03;if(this.op>=this.maxOp&&Math.random()<.01)this.phase='out'}}else{{this.op-=.02;if(this.op<=0)this.reset()}}}}draw(){{ctx.beginPath();ctx.arc(this.x,this.y,3,0,Math.PI*2);ctx.fillStyle=`rgba(180,255,100,${{this.op}})`;ctx.fill();const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,15);g.addColorStop(0,`rgba(180,255,100,${{this.op*.4}})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(this.x,this.y,15,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}}}}for(let i=0;i<100;i++)flies.push(new Fly());function drawTrees(){{ctx.fillStyle='rgba(5,15,3,.9)';for(let i=0;i<12;i++){{const x=i*(W/11);const h=H*.35+Math.sin(i*2.3)*H*.08;ctx.beginPath();ctx.moveTo(x,H);ctx.lineTo(x-30,H-h*.4);ctx.lineTo(x,H-h);ctx.lineTo(x+30,H-h*.4);ctx.closePath();ctx.fill()}}}}function loop(){{ctx.clearRect(0,0,W,H);drawTrees();flies.forEach(f=>{{f.update();f.draw()}});requestAnimationFrame(loop)}}loop();const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='💚 You Are My Light 💚';setTimeout(()=>btn.textContent='✨ Spark My World ✨',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+  // glow background heart
+  const grd=hX.createRadialGradient(S/2,S/2,10,S/2,S/2,S*.55);
+  grd.addColorStop(0,'rgba({g},.3)');
+  grd.addColorStop(1,'rgba({g},0)');
+  hX.fillStyle=grd;
+  hX.fillRect(0,0,S,S);
 
+  // clip to heart
+  heartPath(hX,S/2,S/2+10,S*.8);
+  hX.save();
+  hX.clip();
 
-def html_neon(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 💜</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400;700&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:#05010f;min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#fff;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:16px;height:16px;border-radius:50%;background:rgba(255,50,200,.9);pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,24px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;color:#ff40e0;text-shadow:0 0 20px #ff40e0,0 0 60px rgba(255,64,224,.5);opacity:0;animation:neonOn 2s ease forwards 1.8s}}.sub{{font-size:clamp(.7rem,2vw,.95rem);letter-spacing:.5em;text-transform:uppercase;color:rgba(255,150,255,.5);opacity:0;animation:fup 1s ease forwards 3.8s}}.hw{{opacity:0;animation:fup .8s ease forwards 4.6s}}.hi{{font-size:clamp(2rem,6vw,3.2rem);display:inline-block;animation:flicker 3s ease-in-out infinite 4.6s}}.mw{{max-width:min(560px,90vw);opacity:0;animation:fup 1.2s ease forwards 5.6s}}.msg{{font-size:clamp(.86rem,2.3vw,1.08rem);font-weight:300;line-height:2;color:rgba(255,220,255,.8)}}.msg em{{color:#ff80ff;font-style:italic}}.msg strong{{color:#ffb0ff}}.btn{{opacity:0;animation:fup .8s ease forwards 8.4s;background:transparent;border:1.5px solid rgba(255,64,224,.6);color:#fff;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2vw,.9rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:13px 38px;border-radius:50px;cursor:pointer;transition:all .3s}}.btn:hover{{border-color:#ff40e0;box-shadow:0 0 20px rgba(255,64,224,.6);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.18em;color:rgba(255,150,255,.25);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes neonOn{{0%{{opacity:0}}50%{{opacity:.6}}100%{{opacity:1}}}}@keyframes fup{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes flicker{{0%,100%{{opacity:1}}93%{{opacity:.4}}94%{{opacity:1}}97%{{opacity:.7}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">you make me glow</div><div class="hw"><span class="hi">💜</span></div><div class="mw"><p class="msg">In a city of a million lights,<br><em>you are the neon sign I keep looking for.</em><br><br>Bright, bold, impossible to walk past.<br>You make everywhere you go<br><strong>feel like the place to be</strong> —<br>and I want to be wherever you are,<br><em>{name}.</em></p></div><button class="btn" id="btn" onclick="sendLove()">💜 Light Me Up 💜</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const sparks=[];class Spark{{constructor(){{this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*3;this.vy=(Math.random()-.5)*3;this.life=Math.random()*.8+.2;this.decay=Math.random()*.008+.004;this.r=Math.random()*2+.5;const h=['255,40,224','200,40,255','255,100,255','100,200,255'];this.col=h[Math.floor(Math.random()*h.length)]}}update(){{this.x+=this.vx;this.y+=this.vy;this.vx*=.97;this.vy*=.97;this.life-=this.decay;if(this.x<0||this.x>W)this.vx*=-1;if(this.y<0||this.y>H)this.vy*=-1}}draw(){{ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(${{this.col}},${{this.life}})`;ctx.fill()}}}}for(let i=0;i<200;i++)sparks.push(new Spark());function loop(){{ctx.clearRect(0,0,W,H);sparks.forEach((s,i)=>{{s.update();s.draw();if(s.life<=0)sparks[i]=new Spark()}});requestAnimationFrame(loop)}}loop();const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='💜 You Are My Glow 💜';setTimeout(()=>btn.textContent='💜 Light Me Up 💜',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+  // draw qr code inside heart
+  hX.drawImage(qrC,30,40,200,200);
 
+  // color tint over QR
+  hX.fillStyle='rgba({p},.18)';
+  hX.fillRect(0,0,S,S);
+  hX.restore();
 
-def html_aurora(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🌌</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:#000d1a;min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#e0fff8;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:14px;height:14px;border-radius:50%;background:rgba(80,255,200,.8);pointer-events:none;transform:translate(-50%,-50%)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,24px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;background:linear-gradient(135deg,#80ffcc,#40e0d0,#60d0ff,#b060ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;animation:fup 2s ease forwards 2.5s}}.sub{{font-size:clamp(.7rem,2vw,.95rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(120,255,210,.45);opacity:0;animation:fup 1s ease forwards 4.8s}}.hw{{opacity:0;animation:fup .8s ease forwards 5.6s}}.hi{{font-size:clamp(2rem,6vw,3.2rem);display:inline-block;animation:aur 4s ease-in-out infinite 5.6s}}.mw{{max-width:min(560px,90vw);opacity:0;animation:fup 1.2s ease forwards 6.6s}}.msg{{font-size:clamp(.86rem,2.3vw,1.08rem);font-weight:300;line-height:2;color:rgba(200,255,240,.8)}}.msg em{{color:#80ffcc;font-style:italic}}.msg strong{{color:#b0ffe8}}.btn{{opacity:0;animation:fup .8s ease forwards 9.4s;background:transparent;border:1.5px solid rgba(80,220,180,.5);color:#e0fff8;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2vw,.9rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:13px 38px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s}}.btn:hover{{border-color:rgba(80,255,200,.9);box-shadow:0 0 24px rgba(60,200,160,.5);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(100,255,200,.25);z-index:20;opacity:0;animation:fi 1s ease forwards 12s}}@keyframes fup{{from{{opacity:0;transform:translateY(18px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes aur{{0%,100%{{filter:hue-rotate(0deg)}}50%{{filter:hue-rotate(60deg)}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">as rare as the northern lights</div><div class="hw"><span class="hi">🌌</span></div><div class="mw"><p class="msg">The northern lights don't appear every night —<br><em>they are rare, and for that, more beautiful.</em><br><br>You are like that.<br><strong>Something so uncommon, so stunning,</strong><br>that when you show up,<br>the whole sky changes.<br><br><em>{name}</em>, you are my northern light.</p></div><button class="btn" id="btn" onclick="sendLove()">🌌 Dance with Me 🌌</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;let t=0;const BANDS=[{{col:'rgba(40,255,160,',y:.15,amp:.08,freq:.6,sp:.0004}},{{col:'rgba(40,200,255,',y:.25,amp:.06,freq:.8,sp:.0006}},{{col:'rgba(140,60,255,',y:.10,amp:.10,freq:.5,sp:.0003}},{{col:'rgba(80,255,220,',y:.20,amp:.07,freq:.7,sp:.0005}}];function drawAurora(){{BANDS.forEach(b=>{{for(let i=0;i<3;i++){{const yB=H*b.y+i*H*.04,op=(.06-i*.015)+Math.sin(t*b.sp*1000+i)*.02;ctx.beginPath();ctx.moveTo(0,yB);for(let x=0;x<=W;x+=6){{ctx.lineTo(x,yB+Math.sin(x*b.freq*.01+t*b.sp*1000)*H*b.amp+Math.sin(x*.02+t*b.sp*800)*(H*b.amp*.4))}}ctx.lineTo(W,0);ctx.lineTo(0,0);ctx.closePath();const g=ctx.createLinearGradient(0,0,0,H*.5);g.addColorStop(0,b.col+'0)');g.addColorStop(.5,b.col+op+')');g.addColorStop(1,b.col+'0)');ctx.fillStyle=g;ctx.fill()}}}}}}const stars=Array.from({{length:200}},()=>{{return{{x:Math.random()*W,y:Math.random()*H*.6,r:Math.random()*1.5+.3,op:Math.random()*.6+.2,tp:Math.random()*Math.PI*2,ts:Math.random()*.02+.005}}}});function loop(ts){{t=ts/1000;ctx.clearRect(0,0,W,H);stars.forEach(s=>{{s.tp+=s.ts;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${{s.op+Math.sin(s.tp)*.2}})`;ctx.fill()}});drawAurora();requestAnimationFrame(loop)}}loop(0);const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='💚 You Are My Aurora 💚';setTimeout(()=>btn.textContent='🌌 Dance with Me 🌌',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
+  // heart border stroke
+  heartPath(hX,S/2,S/2+10,S*.8);
+  hX.strokeStyle='{p}';
+  hX.lineWidth=3;
+  hX.shadowColor='{p}';
+  hX.shadowBlur=18;
+  hX.stroke();
+  hX.shadowBlur=0;
+}}
 
-
-def html_sunrise(name, date_str):
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>For {name} 🌅</title><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/><style>*{{margin:0;padding:0;box-sizing:border-box}}body{{background:linear-gradient(180deg,#1a0a00,#3d1500 20%,#7a2d00 40%,#c45200 60%,#f5822a 80%,#ffb347);min-height:100vh;overflow:hidden;font-family:'Raleway',sans-serif;color:#fff5e0;cursor:none}}canvas{{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}}.cur{{position:fixed;z-index:9999;width:16px;height:16px;border-radius:50%;background:rgba(255,180,50,.9);pointer-events:none;transform:translate(-50%,-50%)}}.scene{{position:relative;z-index:10;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:clamp(12px,2.5vh,24px)}}.title{{font-family:'Dancing Script',cursive;font-size:clamp(3rem,11vw,7rem);font-weight:700;color:#ffedbb;text-shadow:0 0 40px rgba(255,160,30,.6);opacity:0;animation:rise 2s ease forwards 2s}}.sub{{font-size:clamp(.7rem,2vw,.95rem);letter-spacing:.4em;text-transform:uppercase;color:rgba(255,220,150,.5);opacity:0;animation:fup 1s ease forwards 4.3s}}.hw{{opacity:0;animation:fup .8s ease forwards 5.1s}}.hi{{font-size:clamp(2rem,6vw,3.2rem);display:inline-block;animation:sunp 2s ease-in-out infinite 5.1s;filter:drop-shadow(0 0 16px rgba(255,180,0,.8))}}.mw{{max-width:min(560px,90vw);opacity:0;animation:fup 1.2s ease forwards 6.1s}}.msg{{font-size:clamp(.84rem,2.2vw,1.05rem);font-weight:300;line-height:2;color:rgba(255,240,200,.85)}}.msg em{{color:#ffcc60;font-style:italic}}.msg strong{{color:#ffd88a}}.btn{{opacity:0;animation:fup .8s ease forwards 8.9s;background:transparent;border:1.5px solid rgba(255,180,50,.5);color:#fff5e0;font-family:'Raleway',sans-serif;font-size:clamp(.78rem,2vw,.9rem);font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:13px 38px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s}}.btn:hover{{border-color:rgba(255,180,50,.9);box-shadow:0 0 24px rgba(255,150,30,.5);transform:translateY(-2px)}}.ds{{position:fixed;bottom:16px;right:18px;font-size:.68rem;letter-spacing:.15em;color:rgba(255,200,100,.3);z-index:20;opacity:0;animation:fi 1s ease forwards 11s}}@keyframes rise{{from{{opacity:0;transform:translateY(30px);filter:blur(16px)}}to{{opacity:1;transform:translateY(0);filter:blur(0)}}}}@keyframes fup{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:translateY(0)}}}}@keyframes fi{{to{{opacity:1}}}}@keyframes sunp{{0%,100%{{transform:scale(1)}}50%{{transform:scale(1.12)}}}}</style></head><body><canvas id="cv"></canvas><div class="cur" id="cur"></div><div class="scene"><div class="title">{name}</div><div class="sub">every morning, you</div><div class="hw"><span class="hi">🌅</span></div><div class="mw"><p class="msg">Every morning the sun rises<br>and <em>the world gets a second chance</em> —<br>warm, golden, full of hope.<br><br>That's what you feel like.<br><strong>Like a sunrise I never get tired of.</strong><br><br>Every day is better just because<br>you're in it, <em>{name}.</em></p></div><button class="btn" id="btn" onclick="sendLove()">🌅 Brighten My Day 🌅</button></div><div class="ds">{date_str}</div><script>const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;const motes=Array.from({{length:60}},()=>{{return{{x:Math.random()*W,y:H*.4+Math.random()*H*.6,vx:(Math.random()-.5)*.4,vy:-(Math.random()*.6+.2),op:Math.random()*.5+.3,r:Math.random()*3+1,decay:.003+Math.random()*.003}}}});function loop(ts){{ctx.clearRect(0,0,W,H);const g=ctx.createRadialGradient(W*.5,H*.55,0,W*.5,H*.55,W*.4);g.addColorStop(0,'rgba(255,220,80,.18)');g.addColorStop(.4,'rgba(255,140,20,.06)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);motes.forEach(m=>{{m.x+=m.vx;m.y+=m.vy;m.op-=m.decay;if(m.op<=0){{m.x=Math.random()*W;m.y=H+10;m.op=Math.random()*.5+.3;m.vy=-(Math.random()*.6+.2)}}ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,200,80,${{m.op}})`;ctx.fill()}});requestAnimationFrame(loop)}}loop(0);const cur=document.getElementById('cur');document.addEventListener('mousemove',e=>{{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'}});function sendLove(){{const btn=document.getElementById('btn');btn.textContent='☀️ You Are My Sunshine ☀️';setTimeout(()=>btn.textContent='🌅 Brighten My Day 🌅',3000)}}window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}});</script></body></html>"""
-
-
-# ── Dispatcher ─────────────────────────────────────────────────────────────────
-GENERATORS = {
-    "galaxy":    html_galaxy,
-    "sakura":    html_sakura,
-    "ocean":     html_ocean,
-    "firefly":   html_firefly,
-    "neon":      html_neon,
-    "aurora":    html_aurora,
-    "sunrise":   html_sunrise,
-    "rain":      html_rain,
-    "particle":  html_particle,
-    "matrix":    html_matrix,
-    "butterfly": html_butterfly,
-    "campfire":  html_campfire,
-}
-
-def get_html(slug, name, date_str):
-    return GENERATORS.get(slug, html_galaxy)(name, date_str)
+window.addEventListener('resize',()=>{{W=bg.width=window.innerWidth;H=bg.height=window.innerHeight}});
+</script>
+</body>
+</html>"""
 
 
 # ── GitHub API ─────────────────────────────────────────────────────────────────
@@ -140,27 +867,39 @@ def run(cmd, cwd=None):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main():
-    today     = datetime.date.today()
-    # Use day ordinal so theme cycles through ALL themes, not just 7
-    theme     = ALL_THEMES[today.toordinal() % len(ALL_THEMES)]
-    next_theme = ALL_THEMES[(today.toordinal() + 1) % len(ALL_THEMES)]
-    date_str  = today.strftime("%B %d · %Y")
-    repo_name = f"for-jenisha-{today.strftime('%Y%m%d')}"
+    today      = datetime.date.today()
+    ordinal    = today.toordinal()
+    theme      = ALL_THEMES[ordinal % len(ALL_THEMES)]
+    next_theme = ALL_THEMES[(ordinal + 1) % len(ALL_THEMES)]
+    fmt        = get_format(ordinal)
+    date_str   = today.strftime("%B %d · %Y")
+    repo_name  = f"for-jenisha-{today.strftime('%Y%m%d')}"
+    page_url   = f"https://{USERNAME}.github.io/{repo_name}/"
 
-    print(f"\n{'='*55}")
+    fmt_label = {"interactive": "🎮 Interactive Unlock", "email": "📧 Flirty Email", "qr": "💗 Heart QR Code"}
+
+    print(f"\n{'='*58}")
     print(f"  💗  Daily Love Page — {HER_NAME}")
     print(f"  📅  {date_str}")
-    print(f"  🎨  Theme: {theme['name']} ({theme['mood']})")
+    print(f"  🎨  Theme : {theme['name']} ({theme['mood']})")
+    print(f"  📐  Format: {fmt_label.get(fmt, fmt)}")
     print(f"  ➡️   Tomorrow: {next_theme['name']} ({next_theme['mood']})")
-    print(f"{'='*55}\n")
+    print(f"{'='*58}\n")
+
+    # Generate HTML
+    if fmt == "email":
+        html = html_email(theme, HER_NAME, date_str)
+    elif fmt == "qr":
+        html = html_qr(theme, HER_NAME, date_str, page_url)
+    else:
+        html = html_interactive(theme, HER_NAME, date_str)
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
-        html = get_html(theme["slug"], HER_NAME, date_str)
         (tmp / "index.html").write_text(html, encoding="utf-8")
         print("✅  HTML generated")
 
-        desc = f"For {HER_NAME} — {theme['name']} theme 💗 ({date_str})"
+        desc = f"For {HER_NAME} — {theme['name']} ({fmt_label.get(fmt,'')}) 💗 {date_str}"
         repo_data, status = gh_api("POST", "/user/repos", {
             "name": repo_name, "description": desc, "private": False, "auto_init": False,
         })
@@ -184,9 +923,8 @@ def main():
 
         time.sleep(4)
         gh_api("POST", f"/repos/{USERNAME}/{repo_name}/pages", {"source": {"branch":"main","path":"/"}})
-        page_url = f"https://{USERNAME}.github.io/{repo_name}/"
-        print(f"✅  Pages → {page_url}\n")
-        return page_url, theme, next_theme, date_str, repo_name
+        print(f"✅  Pages enabled → {page_url}\n")
+        return page_url, theme, next_theme, date_str, repo_name, fmt
 
 if __name__ == "__main__":
     main()
