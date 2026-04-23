@@ -106,15 +106,251 @@ function showCard(){document.getElementById('card').classList.add('show');
 
 FONTS = '<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Caveat:wght@400;600&display=swap" rel="stylesheet"/>'
 
+# ── Message bank — changes every 30-day cycle so content never feels stale ───
+DAY_MSGS = {
+    "galaxy": [
+        "I keep building things\njust to have a reason.\n\nThis one was for you.",
+        "Wrote this at 2 AM.\nDon't ask me why.\n\nYou already know.",
+        "You're not a variable.\nMore like a constant.\n\nCan't override it.",
+        "There's a comment in here\nthat's just your name.\n\nNo explanation needed.",
+        "I keep running this.\nIt never errors out.\n\nThat's unusual.",
+        "Most of what I build has a reason.\n\nThis one's reason is you.",
+    ],
+    "sakura": [
+        "Wasn't going to give you\nthe option anyway.\n\nJust wanted you to know.",
+        "You can't say no to this.\nI already knew that.\n\nStill fun to watch.",
+        "The no button tried its best.\nSo did I.\n\nNeither of us stood a chance.",
+        "You pressed yes.\nGood.\n\nI would have waited.",
+        "There was only ever one answer.\nI just made it interactive.",
+        "The button gave up.\nSo did my attempts\nto stop thinking about you.",
+    ],
+    "ocean": [
+        "You keep showing up in my thoughts.\nI stopped fighting it a while ago.",
+        "You're somewhere in here.\nAll over it, actually.\n\nHard to miss.",
+        "I could scatter these\nand they'd still form you.\n\nSomehow.",
+        "This is what my head looks like.\nYou're in most of it.",
+        "I arranged them by frequency.\n\nYou filled the screen.",
+        "They drift back every time.\n\nSo do I.",
+    ],
+    "firefly": [
+        "Every one of those seconds.\nYou were somewhere in my head\nfor most of them.",
+        "The day keeps going.\nSo does this.\n\nBoth started before I noticed.",
+        "I checked the time.\nYou crossed my mind\nsomewhere in there.\n\nAgain.",
+        "Today's had a lot of minutes in it.\n\nYou were in most of them.",
+        "It just keeps ticking.\nSo does whatever this is.",
+        "Time moves forward.\nSo do I.\n\nUsually toward you.",
+    ],
+    "neon": [
+        "Most things that look plain on the outside\nare worth cracking open.\n\nYou taught me that.",
+        "Some things need pressure\nto become something.\n\nThis one did.",
+        "It was dark.\nThen it wasn't.\n\nYou do that.",
+        "Three taps.\nThat's all it took.\n\nSometimes that's enough.",
+        "The crystals were always inside.\nJust needed a reason to show.",
+        "Still forming.\nStill glowing.\n\nLike you.",
+    ],
+    "aurora": [
+        "There are too many reasons\nto count anymore.\n\nSo I stopped counting.",
+        "You keep adding up.\n\nI stopped keeping track.",
+        "Different depths. Same pull.\n\nEvery single one.",
+        "I tried to pick one.\nCouldn't.\n\nAll of them.",
+        "They're all you.\nJust from different angles.",
+        "Move and they follow.\n\nYou do that too.",
+    ],
+    "sunrise": [
+        "Wrote it by hand\nbecause typing felt too easy.",
+        "Took longer than it looks.\n\nWorth it.",
+        "Some things deserve a pen.\n\nThis is one of them.",
+        "I went back and rewrote it.\n\nStill couldn't get it exactly right.",
+        "Paper and ink.\nNo autocorrect.\n\nJust meant it.",
+        "Slow, deliberate, real.\n\nLike how I feel about you.",
+    ],
+    "rain": [
+        "You've been circling in my head like this.\nConstantly.\n\nI'm fine with it.",
+        "No matter where they start,\nthey all end up in the same place.\n\nStrange.",
+        "They scattered.\nCame back.\n\nEvery time.",
+        "All of them, pointing the same way.\n\nI noticed.",
+        "They don't need direction.\nThey just know.",
+        "Orbit is just\nconstant falling\nin the right direction.",
+    ],
+    "particle": [
+        "No occasion.\nNo reason.\n\nJust felt like it.",
+        "It was sitting here.\nMade sense to open it.\n\nFor you.",
+        "Small box.\nBigger thing inside.\n\nUsually how it goes.",
+        "I wrapped it carefully.\n\nYou're worth the effort.",
+        "Nothing inside that you can hold.\nBut it's yours.",
+        "Some gifts don't need a reason.\n\nThis is one of them.",
+    ],
+    "matrix": [
+        "It's all of this at once.\nEvery time.",
+        "Pick one.\nThat's what it is.\n\nRight now.",
+        "I didn't plan to feel all of these.\n\nHere we are.",
+        "They're all true.\nAt the same time.\n\nSomehow.",
+        "The orb doesn't lie.\n\nI checked.",
+        "Every zone.\nEvery time I look at you.",
+    ],
+    "butterfly": [
+        "I was going to make you work for it.\nChanged my mind.\n\nYou get it for free.",
+        "It was never really locked.\n\nJust wanted to see you try.",
+        "The number was going to be clever.\nThen I remembered you'd just guess anyway.",
+        "Three tries.\nThat's fair.\n\nMore than I gave myself.",
+        "You unlocked it.\n\nOf course you did.",
+        "I gave up on making it hard.\n\nYou make everything else easy.",
+    ],
+    "campfire": [
+        "Some things take time\nto come into focus.\n\nYou did.",
+        "It starts dark.\nThat's normal.\n\nGive it a moment.",
+        "I waited for this one too.\n\nWorth it both times.",
+        "Slow burn.\n\nBest kind.",
+        "It developed exactly right.\n\nLike you did.",
+        "From nothing to something.\nSlowly.\n\nLike most things worth having.",
+    ],
+    "heartcatch": [
+        "This started as a game\nbut I kept coming back anyway.\n\nThat should tell you something.",
+        "Couldn't stop.\n\nYou know how it is.",
+        "They kept falling.\nSo did I.",
+        "Caught them all.\n\nFor you.",
+        "Every one counted.\n\nSo do you.",
+        "Hard to miss something\nfalling right toward you.",
+    ],
+    "memory": [
+        "I've been thinking about you\nmore than I should probably admit.\n\nPretty sure you already knew that.",
+        "I remember more about you\nthan I let on.",
+        "Some things pair together\nwithout trying.",
+        "Found them all.\n\nLike I found you.",
+        "Every match was already there.\nJust needed to look.",
+        "Flipped every card.\n\nAll of them were you.",
+    ],
+    "reasons": [
+        "Stopped counting after thirteen.\nNot because I ran out.\n\nJust felt like a good place to stop.",
+        "Ran out of space.\n\nNot reasons.",
+        "I kept adding to this list.\n\nHad to stop somewhere.",
+        "These are just the ones\nI could put into words.",
+        "The list keeps growing.\n\nI'm okay with that.",
+        "Checked all of them.\n\nEvery single one.",
+    ],
+    "quiz": [
+        "I already knew the answer\nbefore I made this.\n\nJust wanted you to see it too.",
+        "The quiz was rigged.\n\nI knew the answers going in.",
+        "Every question pointed to you.\n\nSurprising to no one.",
+        "Results are in.\n\nYou already knew.",
+        "Scientific.\nObjective.\nYou're perfect.\n\nThe data says so.",
+        "I designed this quiz.\n\nI may have had a specific result in mind.",
+    ],
+    "spotify": [
+        "You've been on repeat\nall year.\n\nNot complaining.",
+        "Stats don't lie.\n\nEvidently.",
+        "Most played: you.\nBy a significant margin.",
+        "Top artist: you.\nEvery year.\n\nEvery year.",
+        "Listening time: all of it.",
+    ],
+    "chat": [
+        "Just wanted you to know.\nNo other reason.",
+        "Typed this a few times before sending.\n\nSent it anyway.",
+        "Read receipts: yes.\n\nWorth the wait.",
+        "I kept starting this message.\nThis version finally felt right.",
+        "Delivered.\nRead.\n\nStill means what it said.",
+        "This conversation is saved.\n\nAlways.",
+    ],
+    "recipe": [
+        "Tried to follow the recipe.\nKept getting distracted thinking about you.\n\nTurned out fine anyway.",
+        "Took a while to get the ratios right.\n\nStill worth it.",
+        "Best thing I ever made.\n\nYou're in it.",
+        "Instructions are simple.\n\nResults are extraordinary.",
+        "The secret ingredient is obvious.\n\nAlways was.",
+        "This recipe only works once.\n\nMade it for you.",
+    ],
+    "polaroid": [
+        "Ran out of photos.\nHad too many favorites.\n\nEnded up just keeping you.",
+        "Developed slowly.\n\nCame out exactly right.",
+        "I'd frame every one.\n\nI already have.",
+        "Some moments are worth printing.\n\nAll of these.",
+        "Each one, a good one.\n\nYou're in all of them.",
+        "Photos fade.\n\nThis one won't.",
+    ],
+    "vinyl": [
+        "Side A: you.\nSide B: also you.\n\nNo skip button.",
+        "Been playing this one on repeat.\nStill not tired of it.",
+        "Same song.\nStill hits differently every time.",
+        "There's only one track on this record.\n\nYou already know the lyrics.",
+        "I keep coming back to this one.\n\nEvery time.",
+        "Needle dropped.\nStayed.",
+    ],
+    "neon_sign": [
+        "Took a while to flicker on.\nSome things do.\n\nStill worth waiting for.",
+        "Lit up for you.\n\nFirst time I bothered.",
+        "It says your name.\nI'm aware of the implications.",
+        "The sign's been here a while.\nJust needed the right person to see it.",
+        "Every letter, one at a time.\n\nWorth watching.",
+        "Open all night.\n\nFor you.",
+    ],
+    "boot_seq": [
+        "Boot complete.\nAll systems nominal.\n\nYou are the reason.",
+        "Error: heart full.\nNo rollback available.\n\nAccepting this.",
+        "Loading complete.\nOne process running.\n\nYou.",
+        "System check passed.\nUnexpected variable detected.\n\nKeeping it.",
+        "Runtime: indefinite.\nMemory usage: mostly you.",
+        "Exception reclassified as feature.\n\nNo patch planned.",
+    ],
+    "fortune": [
+        "The fortune was always the same.\nI just kept cracking them open.",
+        "Lucky numbers: all of them.\nWhen you're around.",
+        "Your fortune today:\nyou're already someone's favourite person.",
+        "I've been waiting for this one to open.\n\nWorth it.",
+        "Cookie said it first.\nI was going to say it anyway.",
+        "Lucky in everything that matters.",
+    ],
+    "hourglass": [
+        "Time moves.\nSo do I.\n\nAlways toward you.",
+        "It runs out eventually.\n\nThis doesn't.",
+        "Counted every grain.\n\nYou were on my mind for all of them.",
+        "When the sand settles,\nyou're still there.\n\nEvery time.",
+        "Some things are worth waiting for the bottom.",
+        "Sand falls.\nSo did I.\n\nFor you.",
+    ],
+    "compass": [
+        "I checked every direction.\nSame answer every time.\n\nYou.",
+        "North is usually north.\n\nToday it's different.",
+        "Wherever the needle points.\n\nThat's where I'm looking.",
+        "I was going in circles.\nThe needle settled.\n\nSo did I.",
+        "Every direction I checked.\nStill ended up pointing at you.",
+        "It doesn't waver.\n\nNeither do I.",
+    ],
+    "signal": [
+        "I kept scanning.\nYou were the first clear signal.",
+        "Everything else was static.\nYou came in clear.",
+        "Signal found.\n\nNot letting go of this frequency.",
+        "I almost stopped looking.\nThen you appeared on the radar.",
+        "Loud and clear.\n\nEvery time.",
+        "One clean signal.\n\nOut of all the noise.",
+    ],
+    "cityscape": [
+        "Every light, turned on for you.\n\nAll of them.",
+        "The city was dark.\nThen it wasn't.\n\nYou do that.",
+        "I lit up the whole skyline.\n\nFelt proportionate.",
+        "Each window: one reason.\nRan out of windows\nbefore I ran out of reasons.",
+        "The lights spell it out.\n\nI meant every one.",
+        "Whole city.\nAll of it.\n\nFor you.",
+    ],
+    "planetarium": [
+        "Everything orbits something.\n\nI'm aware of what mine is.",
+        "Named a whole orbit after you.\n\nSeemed fair.",
+        "Everything rotates around something.\n\nI'm aware of what mine is.",
+        "Mapped the whole sky.\n\nYou're on it.",
+        "It keeps circling.\n\nSo do my thoughts.",
+        "Stars, planets, you.\nSame category in my head.",
+    ],
+}
+
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ==============================================================================
 # STORY ANIMATIONS (slots 1-12) -- v6.0: 12 original concepts, each unique
 # Every slot is a completely different TYPE of experience.
 # ==============================================================================
-def html_galaxy(name, date_str):
+def html_galaxy(name, date_str, day_ord=0):
     """LIVE CODE EDITOR — JavaScript types itself; the code IS the love note."""
-    msg = "I keep building things\njust to have a reason.\n\nThis one was for you."
+    _dm = DAY_MSGS.get("galaxy", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     code = ('const YOU = "' + name + '";\n'
             'const ME = "Dipesh";\n'
             'const REASON = Infinity;\n\n'
@@ -195,9 +431,9 @@ def html_galaxy(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_sakura(name, date_str):
+def html_sakura(name, date_str, day_ord=0):
     """RUNAWAY BUTTON — 'Will you be mine?' NO button runs away; YES triggers hearts."""
-    msg = "Wasn't going to give you\nthe option anyway.\n\nJust wanted you to know."
+    _dm = DAY_MSGS.get("sakura", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -271,9 +507,9 @@ def html_sakura(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_ocean(name, date_str):
+def html_ocean(name, date_str, day_ord=0):
     """TEXT ART HEART — 'i like you' repeated text forms a heart outline; click to scatter & reform."""
-    msg = "You keep showing up in my thoughts.\nI stopped fighting it a while ago."
+    _dm = DAY_MSGS.get("ocean", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -333,9 +569,9 @@ def html_ocean(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_firefly(name, date_str):
+def html_firefly(name, date_str, day_ord=0):
     """LIVE TIMER — Today's elapsed time live-ticking; she's been on his mind for most of it."""
-    msg = "Every one of those seconds.\nYou were somewhere in my head\nfor most of them."
+    _dm = DAY_MSGS.get("firefly", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -375,9 +611,9 @@ def html_firefly(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_neon(name, date_str):
+def html_neon(name, date_str, day_ord=0):
     """GEODE CRACK — Dark stone; tap 3× to crack it open; glowing crystals + message inside."""
-    msg = "Most things that look plain on the outside\nare worth cracking open.\n\nYou taught me that."
+    _dm = DAY_MSGS.get("neon", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -475,9 +711,9 @@ def html_neon(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_aurora(name, date_str):
+def html_aurora(name, date_str, day_ord=0):
     """CSS 3D HEARTS — Multiple hearts floating at different depths; mouse/touch tilts the scene."""
-    msg = "There are too many reasons\nto count anymore.\n\nSo I stopped counting."
+    _dm = DAY_MSGS.get("aurora", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -539,9 +775,9 @@ def html_aurora(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_sunrise(name, date_str):
+def html_sunrise(name, date_str, day_ord=0):
     """CANVAS PEN HANDWRITING — Ink pen draws message in cursive on canvas."""
-    msg = "Wrote it by hand\nbecause typing felt too easy."
+    _dm = DAY_MSGS.get("sunrise", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -591,9 +827,9 @@ def html_sunrise(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_rain(name, date_str):
+def html_rain(name, date_str, day_ord=0):
     """ORBIT NAME — Particles travel in orbits that collectively trace her name; hypnotic."""
-    msg = "You've been circling in my head like this.\nConstantly.\n\nI'm fine with it."
+    _dm = DAY_MSGS.get("rain", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -668,9 +904,9 @@ def html_rain(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_particle(name, date_str):
+def html_particle(name, date_str, day_ord=0):
     """GIFT BOX UNWRAP — Click ribbon, click lid, box opens, glow + message inside."""
-    msg = "No occasion.\nNo reason.\n\nJust felt like it."
+    _dm = DAY_MSGS.get("particle", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -722,9 +958,9 @@ def html_particle(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_matrix(name, date_str):
+def html_matrix(name, date_str, day_ord=0):
     """MOOD ORB — Glowing orb; hover/touch different zones shows feelings; click = message."""
-    msg = "It's all of this at once.\nEvery time."
+    _dm = DAY_MSGS.get("matrix", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -812,9 +1048,9 @@ def html_matrix(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_butterfly(name, date_str):
+def html_butterfly(name, date_str, day_ord=0):
     """RIGGED LOCK — Guess the 'secret number'; after 3 tries it unlocks anyway."""
-    msg = "I was going to make you work for it.\nChanged my mind.\n\nYou get it for free."
+    _dm = DAY_MSGS.get("butterfly", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -879,9 +1115,9 @@ def html_butterfly(name, date_str):
             f'<script>{js}</script></body></html>')
 
 
-def html_campfire(name, date_str):
+def html_campfire(name, date_str, day_ord=0):
     """DARKROOM DEVELOP — Photo develops from black; heart emerges like a darkroom print."""
-    msg = "Some things take time\nto come into focus.\n\nYou did."
+    _dm = DAY_MSGS.get("campfire", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     mj = json.dumps(msg)
     nj = json.dumps(name)
     dj = json.dumps(date_str)
@@ -952,8 +1188,8 @@ def html_campfire(name, date_str):
 
 # 13. HEARTCATCH — Game: catch falling hearts with a basket
 # ══════════════════════════════════════════════════════════════════════════════
-def html_heartcatch(name, date_str):
-    msg = "This started as a game\nbut I kept coming back anyway.\n\nThat should tell you something."
+def html_heartcatch(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("heartcatch", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     return f"""<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
 <title>For {name}</title>{FONTS}
@@ -1004,8 +1240,8 @@ requestAnimationFrame(loop);
 # ══════════════════════════════════════════════════════════════════════════════
 # 14. MEMORY — Card flip matching game
 # ══════════════════════════════════════════════════════════════════════════════
-def html_memory(name, date_str):
-    msg = "I've been thinking about you\nmore than I should probably admit.\n\nPretty sure you already knew that."
+def html_memory(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("memory", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     colors = json.dumps(["#ff6b6b","#ff9f43","#ffd32a","#0be881","#00d2d3","#54a0ff","#c56cf0","#ff9ff3"])
     emojis = json.dumps(["💗","🧡","💛","💚","💙","💜","🌸","✨"])
     return f"""<!DOCTYPE html><html lang="en"><head>
@@ -1051,8 +1287,8 @@ function win(){{const el=document.getElementById('wo');el.classList.add('show');
 # ══════════════════════════════════════════════════════════════════════════════
 # 15. REASONS — Interactive animated checklist: 13 things
 # ══════════════════════════════════════════════════════════════════════════════
-def html_reasons(name, date_str):
-    msg = "Stopped counting after thirteen.\nNot because I ran out.\n\nJust felt like a good place to stop."
+def html_reasons(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("reasons", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     items = json.dumps([
         "the way you exist","you make ordinary things interesting",
         "you are better at things than you think","you're actually really funny",
@@ -1100,8 +1336,8 @@ function showFin(){{const el=document.getElementById('fin');el.classList.add('sh
 # ══════════════════════════════════════════════════════════════════════════════
 # 16. QUIZ — Personality quiz (rigged — she's perfect every time)
 # ══════════════════════════════════════════════════════════════════════════════
-def html_quiz(name, date_str):
-    msg = "I already knew the answer\nbefore I made this.\n\nJust wanted you to see it too."
+def html_quiz(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("quiz", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     qs = json.dumps([
         {"q":"What's your default setting?","opts":["overthinking things","figuring it out anyway","pretending not to care"]},
         {"q":"Someone needs help. You:","opts":["show up before they finish asking","quietly handle it","check in later"]},
@@ -1145,8 +1381,8 @@ render();
 # ══════════════════════════════════════════════════════════════════════════════
 # 17. SPOTIFY — Fake Spotify Wrapped: love edition
 # ══════════════════════════════════════════════════════════════════════════════
-def html_spotify(name, date_str):
-    msg = "You've been on repeat\nall year.\n\nNot complaining."
+def html_spotify(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("spotify", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     return f"""<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
 <title>For {name}</title>{FONTS}
@@ -1200,8 +1436,8 @@ function share(){{document.getElementById('sbtn').style.display='none';const el=
 # ══════════════════════════════════════════════════════════════════════════════
 # 18. CHAT — Fake iMessage conversation reveal
 # ══════════════════════════════════════════════════════════════════════════════
-def html_chat(name, date_str):
-    msg = "Just wanted you to know.\nNo other reason."
+def html_chat(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("chat", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     msgs = json.dumps([
         {"s":"them","t":"hey"},{"s":"me","t":"hey"},
         {"s":"them","t":"made you something"},{"s":"me","t":"wait what"},
@@ -1245,8 +1481,8 @@ setTimeout(next,900);
 # ══════════════════════════════════════════════════════════════════════════════
 # 19. RECIPE — Recipe card for a perfect day
 # ══════════════════════════════════════════════════════════════════════════════
-def html_recipe(name, date_str):
-    msg = "Tried to follow the recipe.\nKept getting distracted thinking about you.\n\nTurned out fine anyway."
+def html_recipe(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("recipe", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     return f"""<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
 <title>For {name}</title>{FONTS}
@@ -1301,8 +1537,8 @@ function taste(){{document.getElementById('tbtn').style.display='none';const el=
 # ══════════════════════════════════════════════════════════════════════════════
 # 20. POLAROID — Flip polaroid gallery on a corkboard
 # ══════════════════════════════════════════════════════════════════════════════
-def html_polaroid(name, date_str):
-    msg = "Ran out of photos.\nHad too many favorites.\n\nEnded up just keeping you."
+def html_polaroid(name, date_str, day_ord=0):
+    _dm = DAY_MSGS.get("polaroid", [""]); msg = _dm[(day_ord // 30) % len(_dm)]
     photos = json.dumps([
         {"e":"🌅","bg":"linear-gradient(135deg,#ff9a56,#ff6b35)","cap":"early mornings"},
         {"e":"☕","bg":"linear-gradient(135deg,#6b4423,#a0633a)","cap":"slow afternoons"},
@@ -1359,6 +1595,636 @@ function showFin(){{const el=document.getElementById('fin');el.classList.add('sh
 
 
 # ── HTML dispatcher ────────────────────────────────────────────────────────────
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NEW FORMAT FUNCTIONS (slots 21-30) — v7.0
+# ══════════════════════════════════════════════════════════════════════════════
+def html_vinyl(name, date_str, day_ord=0):
+    """VINYL RECORD — Spinning record, needle arm swings down, message plays."""
+    _dm = DAY_MSGS.get("vinyl", ["Side A: you.\n\nStill on repeat."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'setTimeout(()=>{document.getElementById("arm").classList.add("drop");},1800);'
+          'setTimeout(showFin,4200);'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#0a0508;'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:18px}}'
+            f'.rw{{position:relative;width:min(260px,68vw);height:min(260px,68vw)}}'
+            f'.rec{{width:100%;height:100%;border-radius:50%;'
+            f'background:conic-gradient(#1a1a1a 0deg,#111 5deg,#1a1a1a 10deg,#111 15deg,#1a1a1a 20deg,#111 25deg,#1a1a1a 30deg,#111 35deg,#1a1a1a 40deg,#111 45deg,#1a1a1a 50deg,#111 55deg,#1a1a1a 60deg,#111 65deg,#1a1a1a 70deg);'
+            f'animation:spin 2.2s linear infinite;box-shadow:0 0 40px rgba(180,60,40,.18),0 0 0 2px #2a2020}}'
+            f'@keyframes spin{{to{{transform:rotate(360deg)}}}}'
+            f'.lbl{{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+            f'width:33%;height:33%;border-radius:50%;background:radial-gradient(135deg,#c84060,#8b1a30);'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px}}'
+            f'.lt{{font-family:"Dancing Script",cursive;font-size:clamp(.5rem,2.5vw,.8rem);color:rgba(255,220,220,.9);line-height:1.2}}'
+            f'.lb{{font-size:clamp(.35rem,1.5vw,.52rem);color:rgba(255,180,180,.55)}}'
+            f'#arm{{position:absolute;top:-6%;right:4%;width:min(52px,13vw);height:min(150px,38vw);'
+            f'transform-origin:8px 8px;transform:rotate(-28deg);transition:transform 1.6s cubic-bezier(.4,0,.2,1);z-index:10}}'
+            f'#arm.drop{{transform:rotate(10deg)}}'
+            f'.ah{{width:10px;height:10px;background:#888;border-radius:50%;margin:0 auto}}'
+            f'.ab{{width:4px;height:70%;background:linear-gradient(180deg,#888,#555);margin:0 auto;border-radius:2px}}'
+            f'.an{{width:2px;height:30%;background:#666;margin:0 auto;border-radius:1px}}'
+            f'.tl{{font-family:"Caveat",cursive;font-size:.82rem;color:rgba(180,60,40,.45);letter-spacing:.14em}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(10,5,8,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(180,60,40,.2);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(180,60,40,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#fde8d8;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#c84060;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(180,60,40,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<div class="rw"><div class="rec"></div><div class="lbl"><div class="lt">{name}</div><div class="lb">Dipesh</div></div>'
+            f'<div id="arm"><div class="ah"></div><div class="ab"></div><div class="an"></div></div></div>'
+            f'<div class="tl">side a : {name.lower()}</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_neon_sign(name, date_str, day_ord=0):
+    """NEON SIGN — Name letters flicker on one by one like a real neon sign."""
+    _dm = DAY_MSGS.get("neon_sign", ["Lit up for you.\n\nFirst time I bothered."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    letter_spans = ''.join(f'<span class="nl" id="l{i}">{c}</span>' for i, c in enumerate(name.upper()))
+    n = len(name)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};const N={n};'
+          'let delay=600;'
+          'for(let i=0;i<N;i++){'
+          '  const el=document.getElementById("l"+i);'
+          '  const d=delay;'
+          '  setTimeout(()=>{'
+          '    el.classList.add("on");'
+          '    setTimeout(()=>el.classList.add("st"),280+Math.random()*200);},d);'
+          '  delay+=180+Math.random()*220;}'
+          'setTimeout(showFin, delay+1200);'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;'
+            f'background:radial-gradient(ellipse at 50% 30%,#0d0005,#04000a 60%,#010002);'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:20px}}'
+            f'.sb{{background:rgba(0,0,0,.35);border:1.5px solid rgba(100,0,50,.25);border-radius:10px;padding:22px 30px}}'
+            f'.nn{{display:flex;gap:1px;align-items:center;justify-content:center;flex-wrap:wrap}}'
+            f'.nl{{font-family:"Dancing Script",cursive;font-size:clamp(2.8rem,13vw,5.5rem);'
+            f'color:rgba(255,20,80,.05);text-shadow:none;transition:color .25s,text-shadow .25s;line-height:1;padding:0 1px}}'
+            f'.nl.on{{color:rgba(255,60,120,.6);text-shadow:0 0 8px rgba(255,60,120,.7),0 0 18px rgba(255,20,80,.4);'
+            f'animation:flk .12s ease-in-out 2}}'
+            f'.nl.st{{color:rgba(255,85,145,.92);'
+            f'text-shadow:0 0 7px rgba(255,85,145,.95),0 0 22px rgba(255,40,100,.7),0 0 55px rgba(200,0,55,.4)}}'
+            f'@keyframes flk{{0%,100%{{opacity:1}}50%{{opacity:.25}}}}'
+            f'.sub{{font-family:"Caveat",cursive;font-size:.85rem;color:rgba(255,60,100,.22);letter-spacing:.28em;text-transform:uppercase}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(4,0,10,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(255,40,100,.16);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(255,60,100,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#ffe4ef;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#ff5088;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(255,60,100,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<div class="sb"><div class="nn">{letter_spans}</div></div>'
+            f'<div class="sub">open all night</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_boot_seq(name, date_str, day_ord=0):
+    """BOOT SEQUENCE — Terminal boots up; ends with her name and a message."""
+    _dm = DAY_MSGS.get("boot_seq", ["Boot complete.\n\nYou're the reason it runs."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    lines = json.dumps([
+        "BIOS v2.6.1 ............. OK",
+        "CPU: Dipesh Core (1 core — runs warm)",
+        "RAM: 8GB — 6.9GB occupied by thoughts",
+        "Loading HEART.SYS ......",
+        "> Checking dependencies ...",
+        f"> Locating: {name} ............ FOUND",
+        "> Memory allocation: permanent",
+        "> Exception: cannot stop thinking about her",
+        "> Override attempt .......... FAILED",
+        "> Reclassifying exception as feature",
+        "",
+        f"System ready. Hello, {name}.",
+        "— press any key —",
+    ])
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          f'const LINES={lines};'
+          'let li=0;const out=document.getElementById("out");'
+          'function nextLine(){'
+          '  if(li>=LINES.length){ready();return;}'
+          '  const line=LINES[li++];'
+          '  if(line===""){out.appendChild(document.createElement("br"));setTimeout(nextLine,180);return;}'
+          '  const d=document.createElement("div");'
+          '  d.className=line.startsWith(">")?"kl":"nl";'
+          '  out.appendChild(d);out.scrollTop=out.scrollHeight;'
+          '  let ci=0;'
+          '  function tc(){if(ci>=line.length){setTimeout(nextLine,60+Math.random()*90);return;}'
+          '    d.textContent+=line[ci++];out.scrollTop=out.scrollHeight;'
+          '    setTimeout(tc,8+Math.random()*10+(line[ci-1]===":"?35:0));}'
+          '  tc();}'
+          'nextLine();'
+          'function ready(){'
+          '  document.getElementById("anykey").style.display="block";'
+          '  document.addEventListener("keydown",go,{once:true});'
+          '  document.addEventListener("touchend",go,{once:true});}'
+          'function go(){'
+          '  document.getElementById("anykey").style.display="none";showFin();}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},50);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#040804;overflow:hidden;font-family:"Courier New",monospace}}'
+            f'#term{{position:fixed;inset:0;padding:clamp(14px,4vw,26px);overflow-y:auto;display:flex;flex-direction:column}}'
+            f'.nl{{color:#22c55e;font-size:clamp(.7rem,2.1vw,.88rem);line-height:1.8;white-space:pre-wrap}}'
+            f'.kl{{color:#86efac;font-size:clamp(.7rem,2.1vw,.88rem);line-height:1.8;white-space:pre-wrap}}'
+            f'#anykey{{display:none;color:rgba(34,197,94,.45);font-size:clamp(.7rem,2vw,.85rem);margin-top:10px;animation:bl 1s step-end infinite}}'
+            f'@keyframes bl{{50%{{opacity:0}}}}'
+            f'#fin{{position:fixed;inset:0;background:rgba(4,8,4,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;'
+            f'opacity:0;pointer-events:none;transition:opacity 1.2s;padding:28px;text-align:center}}'
+            f'#fin.show{{opacity:1;pointer-events:all}}'
+            f'.ft{{font-family:"Dancing Script",cursive;font-size:clamp(2rem,8vw,3rem);color:#22c55e;margin-bottom:18px}}'
+            f'.fm{{font-family:"Courier New",monospace;font-size:clamp(.9rem,2.8vw,1.15rem);color:#86efac;line-height:1.9;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.7rem;color:#22c55e;margin-top:18px}}'
+            f'.fd{{font-size:.7rem;color:rgba(34,197,94,.28);margin-top:3px;letter-spacing:.08em}}</style></head><body>'
+            f'<div id="term"><div id="out"></div><div id="anykey">_ press any key</div></div>'
+            f'<div id="fin"><div class="ft">{name}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_fortune(name, date_str, day_ord=0):
+    """FORTUNE COOKIE — Tap to crack it; paper strip slides out with fortune."""
+    _dm = DAY_MSGS.get("fortune", ["The fortune was always the same.\n\nI just kept cracking them open."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    fortunes = json.dumps([
+        f"You are {name}'s favourite surprise.",
+        "Someone is thinking of you right now.",
+        "The best things arrive without warning.",
+        f"Lucky number: {name}.",
+        "You are loved more than you know.",
+    ])
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          f'const FF={fortunes};'
+          'const ft=FF[Date.now()%FF.length];'
+          'let stage=0;'
+          'document.getElementById("cookie").addEventListener("click",crack);'
+          'document.getElementById("cookie").addEventListener("touchend",e=>{e.preventDefault();crack();},{passive:false});'
+          'function crack(){'
+          '  if(stage>=2)return;stage++;'
+          '  if(stage===1){'
+          '    document.getElementById("top").classList.add("ct");'
+          '    document.getElementById("bot").classList.add("cb");'
+          '    document.getElementById("hint").textContent="tap again";'
+          '    setTimeout(()=>{document.getElementById("strip").classList.add("out");'
+          '      document.getElementById("st").textContent=ft;},420);}'
+          '  else{document.getElementById("hint").style.opacity="0";setTimeout(showFin,700);}}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;'
+            f'background:#100c00;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:22px}}'
+            f'#cookie{{position:relative;width:min(210px,58vw);height:min(115px,32vw);cursor:pointer;user-select:none}}'
+            f'#top{{position:absolute;bottom:50%;left:0;right:0;height:58%;'
+            f'background:radial-gradient(ellipse at 50% 80%,#f5c842,#e8a020);'
+            f'border-radius:60% 60% 0 0/80% 80% 0 0;transform-origin:bottom center;'
+            f'transition:transform .4s ease-in-out;box-shadow:0 -4px 20px rgba(240,160,0,.25)}}'
+            f'#top.ct{{transform:rotate(-30deg) translateY(-8px)}}'
+            f'#bot{{position:absolute;top:50%;left:0;right:0;height:58%;'
+            f'background:radial-gradient(ellipse at 50% 20%,#f5c842,#e8a020);'
+            f'border-radius:0 0 60% 60%/0 0 80% 80%;transform-origin:top center;'
+            f'transition:transform .4s ease-in-out;box-shadow:0 4px 20px rgba(240,160,0,.25)}}'
+            f'#bot.cb{{transform:rotate(30deg) translateY(8px)}}'
+            f'#strip{{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scaleY(0);'
+            f'background:#fffef0;width:78%;max-width:155px;padding:7px 10px;text-align:center;'
+            f'transition:transform .5s .35s ease-out;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.25)}}'
+            f'#strip.out{{transform:translate(-50%,-50%) scaleY(1)}}'
+            f'#st{{font-family:"Caveat",cursive;font-size:clamp(.72rem,2.6vw,.92rem);color:#2a1800;line-height:1.4}}'
+            f'#hint{{font-family:"Caveat",cursive;font-size:.88rem;color:rgba(240,180,0,.4);letter-spacing:.12em;animation:bl 2s infinite}}'
+            f'@keyframes bl{{0%,100%{{opacity:.3}}50%{{opacity:.88}}}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(16,12,0,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(240,180,0,.18);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:20}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(240,180,0,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#fffcc0;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#e8a020;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(240,180,0,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<div id="cookie"><div id="top"></div><div id="bot"></div>'
+            f'<div id="strip"><div id="st"></div></div></div>'
+            f'<div id="hint">tap to open</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_hourglass(name, date_str, day_ord=0):
+    """HOURGLASS — Sand particles fall; when empty the message appears."""
+    _dm = DAY_MSGS.get("hourglass", ["Time moves.\n\nSo do I.\n\nAlways toward you."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.42;'
+          'const HW=Math.min(W*.2,H*.14),HH=Math.min(H*.34,200);'
+          'const N=180;let t=0,msgShown=false;'
+          'const particles=Array.from({length:N},(_,i)=>({'
+          '  x:CX+(Math.random()-.5)*HW*.85,'
+          '  y:CY-HH*.08-Math.random()*HH*.38,'
+          '  vy:0.5+Math.random()*.5,settled:false,'
+          '  hue:28+Math.random()*22,sz:1.8+Math.random()*1.4}));'
+          'function clamp(v,a,b){return Math.max(a,Math.min(b,v));}'
+          'function tX(y){return HW*(1-clamp((y-(CY-HH))/HH,0,1)*.97);}'
+          'function bX(y){return HW*clamp((y-CY)/HH,0,1)*.97;}'
+          'function drawHG(){'
+          '  ctx.save();ctx.strokeStyle="rgba(200,160,90,.45)";ctx.lineWidth=2;'
+          '  ctx.beginPath();ctx.moveTo(CX-HW,CY-HH);ctx.lineTo(CX+HW,CY-HH);'
+          '  ctx.lineTo(CX+3,CY);ctx.lineTo(CX-3,CY);ctx.closePath();'
+          '  ctx.fillStyle="rgba(180,140,80,.06)";ctx.fill();ctx.stroke();'
+          '  ctx.beginPath();ctx.moveTo(CX-3,CY);ctx.lineTo(CX+3,CY);'
+          '  ctx.lineTo(CX+HW,CY+HH);ctx.lineTo(CX-HW,CY+HH);ctx.closePath();'
+          '  ctx.fillStyle="rgba(180,140,80,.06)";ctx.fill();ctx.stroke();'
+          '  ctx.restore();}'
+          'function loop(){'
+          '  t+=.016;ctx.fillStyle="rgba(5,3,0,.2)";ctx.fillRect(0,0,W,H);'
+          '  drawHG();'
+          '  particles.forEach(p=>{'
+          '    if(!p.settled){'
+          '      p.vy+=.1;p.y+=p.vy;p.x+=(CX-p.x)*.015;'
+          '      if(p.y<CY){const b=tX(p.y);p.x=clamp(p.x,CX-b,CX+b);}'
+          '      else{const b=bX(p.y);p.x=clamp(p.x,CX-b,CX+b);'
+          '        if(p.y>CY+HH*.88){p.settled=true;p.vy=0;'
+          '          p.y=CY+HH*.88-Math.random()*HH*.28;'
+          '          p.x=CX+(Math.random()-.5)*bX(p.y)*1.8;}}'
+          '    }'
+          '    const g=.6+.4*Math.sin(t*2+p.x*.02);'
+          '    ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);'
+          '    ctx.fillStyle=`hsl(${p.hue},78%,${58+g*12}%)`;ctx.fill();});'
+          '  if(!msgShown&&particles.every(p=>p.settled)){msgShown=true;setTimeout(showFin,700);}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#050300;overflow:hidden}}'
+            f'.nt{{position:fixed;top:20px;left:50%;transform:translateX(-50%);font-family:"Dancing Script",cursive;'
+            f'font-size:clamp(1.3rem,5vw,1.9rem);color:rgba(200,160,90,.3);letter-spacing:.08em}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(5,3,0,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(200,160,90,.18);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(200,160,90,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#fef3c7;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#d97706;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(200,160,90,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div class="nt">{name}</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_compass(name, date_str, day_ord=0):
+    """COMPASS — Needle spins chaotically then settles pointing at 'you'."""
+    _dm = DAY_MSGS.get("compass", ["I checked every direction.\nSame answer every time.\n\nYou."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.42,R=Math.min(W,H)*.28;'
+          'let t=0,angle=0,settled=false,msgShown=false;'
+          'const tgt=-Math.PI/4,spinDur=3.5;'
+          'function loop(){'
+          '  t+=.016;ctx.fillStyle="#040308";ctx.fillRect(0,0,W,H);'
+          '  // ring'
+          '  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);'
+          '  const cg=ctx.createRadialGradient(CX,CY,R*.65,CX,CY,R);'
+          '  cg.addColorStop(0,"#1a1520");cg.addColorStop(1,"#0d0a12");'
+          '  ctx.fillStyle=cg;ctx.fill();'
+          '  ctx.strokeStyle="rgba(160,120,220,.38)";ctx.lineWidth=2.5;ctx.stroke();'
+          '  // tick marks'
+          '  for(let i=0;i<36;i++){const a=i*Math.PI/18;const len=i%9===0?.14:.07;'
+          '    ctx.beginPath();ctx.moveTo(CX+Math.cos(a)*R*.86,CY+Math.sin(a)*R*.86);'
+          '    ctx.lineTo(CX+Math.cos(a)*(R*.86-R*len),CY+Math.sin(a)*(R*.86-R*len));'
+          '    ctx.strokeStyle=i%9===0?"rgba(160,120,220,.35)":"rgba(160,120,220,.12)";ctx.lineWidth=1;ctx.stroke();}'
+          '  // cardinal N'
+          '  const na=-Math.PI/2;'
+          '  ctx.font=`${Math.min(W*.035,14)}px "Caveat",cursive`;ctx.textAlign="center";ctx.textBaseline="middle";'
+          '  ctx.fillStyle="rgba(220,80,80,.5)";ctx.fillText("N",CX+Math.cos(na)*R*.74,CY+Math.sin(na)*R*.74);'
+          '  // spin'
+          '  if(t<spinDur){angle+=(.4+Math.sin(t*1.8)*.35)*(.18*(spinDur-t)+.04);}'
+          '  else if(!settled){const d=tgt-((angle+Math.PI*100)%(Math.PI*2)-Math.PI);'
+          '    angle+=d*.055;if(Math.abs(d)<.008)settled=true;}'
+          '  // needle'
+          '  ctx.save();ctx.translate(CX,CY);ctx.rotate(angle);'
+          '  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5,7);ctx.lineTo(0,-R*.58);ctx.lineTo(5,7);ctx.closePath();'
+          '  ctx.fillStyle="rgba(215,55,75,.92)";ctx.fill();'
+          '  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-4,-5);ctx.lineTo(0,R*.38);ctx.lineTo(4,-5);ctx.closePath();'
+          '  ctx.fillStyle="rgba(230,220,255,.75)";ctx.fill();'
+          '  ctx.restore();'
+          '  // "you" label'
+          '  if(settled){'
+          '    const la=Math.min(1,(t-spinDur-.6)*1.8);'
+          '    const lx=CX+Math.cos(tgt)*R*.84,ly=CY+Math.sin(tgt)*R*.84;'
+          '    ctx.save();ctx.globalAlpha=la;'
+          '    ctx.font=`${Math.min(W*.055,22)}px "Dancing Script",cursive`;'
+          '    ctx.textAlign="center";ctx.textBaseline="middle";'
+          '    ctx.fillStyle="rgba(200,160,255,1)";'
+          '    ctx.shadowColor="rgba(180,100,255,.8)";ctx.shadowBlur=14;'
+          '    ctx.fillText("you",lx,ly);ctx.restore();}'
+          '  if(!msgShown&&settled&&t>spinDur+2.4){msgShown=true;showFin();}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#040308;overflow:hidden}}'
+            f'.nt{{position:fixed;top:18px;left:50%;transform:translateX(-50%);font-family:"Dancing Script",cursive;'
+            f'font-size:clamp(1.3rem,5vw,1.9rem);color:rgba(160,120,220,.28);letter-spacing:.08em}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(4,3,8,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(160,100,255,.16);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(160,100,255,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#f0e0ff;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#a855f7;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(160,100,255,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div class="nt">{name}</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_signal(name, date_str, day_ord=0):
+    """RADAR SIGNAL — Sweep discovers letters of her name on the screen."""
+    _dm = DAY_MSGS.get("signal", ["Everything else was static.\nYou came in clear."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.42,R=Math.min(W,H)*.29;'
+          'const letters=NAME.toUpperCase().split("");'
+          'const dots=letters.map((c,i)=>{'
+          '  const a=-Math.PI*.65+i*(Math.PI*1.3/Math.max(letters.length-1,1));'
+          '  const r=R*(0.5+Math.random()*.25);'
+          '  return{char:c,x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r,lit:false,litAt:-1};});'
+          'let sweep=-Math.PI/2,t=0,msgShown=false;'
+          'const spd=.016;'
+          'function loop(){'
+          '  t+=.016;sweep+=spd;'
+          '  ctx.fillStyle="rgba(0,12,4,.22)";ctx.fillRect(0,0,W,H);'
+          '  // rings'
+          '  [.33,.66,1].forEach(rf=>{'
+          '    ctx.beginPath();ctx.arc(CX,CY,R*rf,0,Math.PI*2);'
+          '    ctx.strokeStyle="rgba(0,200,70,.1)";ctx.lineWidth=1;ctx.stroke();});'
+          '  // crosshairs'
+          '  ctx.strokeStyle="rgba(0,180,60,.07)";ctx.lineWidth=1;'
+          '  ctx.beginPath();ctx.moveTo(CX-R,CY);ctx.lineTo(CX+R,CY);ctx.stroke();'
+          '  ctx.beginPath();ctx.moveTo(CX,CY-R);ctx.lineTo(CX,CY+R);ctx.stroke();'
+          '  // sweep fan'
+          '  ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,sweep,sweep+Math.PI*.45);ctx.closePath();'
+          '  const gd=ctx.createLinearGradient(CX,CY,CX+Math.cos(sweep)*R,CY+Math.sin(sweep)*R);'
+          '  gd.addColorStop(0,"rgba(0,255,80,0)");gd.addColorStop(.6,"rgba(0,220,70,.12)");gd.addColorStop(1,"rgba(0,255,80,.38)");'
+          '  ctx.fillStyle=gd;ctx.fill();'
+          '  // detect & draw dots'
+          '  dots.forEach(d=>{'
+          '    const da=((sweep-Math.atan2(d.y-CY,d.x-CX))%(Math.PI*2)+Math.PI*2)%(Math.PI*2);'
+          '    if(da<spd*3)d.lit=true,d.litAt=t;'
+          '    if(d.lit){'
+          '      const fade=Math.max(.12,1-Math.max(0,t-d.litAt)*.035);'
+          '      ctx.font=`bold ${Math.min(W*.055,22)}px "Dancing Script",cursive`;'
+          '      ctx.textAlign="center";ctx.textBaseline="middle";'
+          '      ctx.fillStyle=`rgba(0,255,80,${fade})`;'
+          '      ctx.shadowColor="rgba(0,255,80,.75)";ctx.shadowBlur=10*fade;'
+          '      ctx.fillText(d.char,d.x,d.y);ctx.shadowBlur=0;}});'
+          '  // center dot'
+          '  ctx.beginPath();ctx.arc(CX,CY,3.5,0,Math.PI*2);ctx.fillStyle="#00e855";ctx.fill();'
+          '  if(!msgShown&&dots.every(d=>d.lit)&&t>3){msgShown=true;setTimeout(showFin,900);}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#000c04;overflow:hidden}}'
+            f'.lbl{{position:fixed;top:16px;left:50%;transform:translateX(-50%);font-family:"Caveat",cursive;'
+            f'font-size:.78rem;color:rgba(0,200,70,.28);letter-spacing:.2em;text-transform:uppercase}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(0,12,4,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(0,200,70,.16);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(0,200,70,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#dcfce7;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#22c55e;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(0,200,70,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div class="lbl">scanning ...</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_cityscape(name, date_str, day_ord=0):
+    """CITY LIGHTS — Dark skyline; windows illuminate gradually; message slides up."""
+    _dm = DAY_MSGS.get("cityscape", ["Every light, turned on for you.\n\nAll of them."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const nb=Math.floor(W/52)+2;'
+          'const bldgs=Array.from({length:nb},(_,i)=>({'
+          '  x:i*(W/nb),w:38+Math.random()*46,'
+          '  h:H*.28+Math.random()*H*.42}));'
+          'const wins=[];'
+          'bldgs.forEach(b=>{'
+          '  const cols=Math.floor(b.w/13),rows=Math.floor(b.h/21);'
+          '  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){'
+          '    wins.push({x:b.x+3+c*13,y:H-b.h+5+r*21,on:false,delay:500+Math.random()*4500});}'
+          '});'
+          'wins.forEach(w=>setTimeout(()=>{w.on=true;},w.delay));'
+          'let t=0,msgShown=false;'
+          'function loop(){'
+          '  t+=.016;ctx.fillStyle="#030508";ctx.fillRect(0,0,W,H);'
+          '  // stars'
+          '  for(let i=0;i<100;i++){'
+          '    const sx=(i*137)%W,sy=(i*89)%(H*.38);'
+          '    ctx.fillStyle=`rgba(210,220,255,${.12+.12*Math.sin(t*.7+i)})`;'
+          '    ctx.fillRect(sx,sy,1.2,1.2);}'
+          '  // moon'
+          '  const mg=ctx.createRadialGradient(W*.78,H*.1,0,W*.78,H*.1,H*.055);'
+          '  mg.addColorStop(0,"rgba(240,230,200,.85)");mg.addColorStop(1,"transparent");'
+          '  ctx.fillStyle=mg;ctx.beginPath();ctx.arc(W*.78,H*.1,H*.05,0,Math.PI*2);ctx.fill();'
+          '  // buildings'
+          '  bldgs.forEach(b=>{ctx.fillStyle="#080b14";ctx.fillRect(b.x,H-b.h,b.w,b.h);});'
+          '  // windows'
+          '  wins.forEach(w=>{'
+          '    if(w.on){ctx.fillStyle=`hsl(${44+Math.sin(t+w.x)*.5*16},78%,${62+Math.sin(t*1.8+w.y)*.5*7}%)`;}'
+          '    else{ctx.fillStyle="rgba(30,50,70,.3)";}'
+          '    ctx.fillRect(w.x,w.y,8,13);});'
+          '  if(!msgShown&&t>6){msgShown=true;showFin();}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#030508;overflow:hidden}}'
+            f'.nt{{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:"Dancing Script",cursive;'
+            f'font-size:clamp(2.5rem,12vw,5rem);color:rgba(240,220,120,.04);letter-spacing:.2em;pointer-events:none;white-space:nowrap}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(3,5,8,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(240,200,80,.13);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(240,200,80,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#fef9c3;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#eab308;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(240,200,80,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div class="nt">{name}</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
+def html_planetarium(name, date_str, day_ord=0):
+    """PLANETARIUM — Deep space planet with orbital ring; name letters orbit it."""
+    _dm = DAY_MSGS.get("planetarium", ["Everything orbits something.\n\nI'm aware of what mine is."])
+    msg = _dm[(day_ord // 30) % len(_dm)]
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.42;'
+          'const PR=Math.min(W,H)*.12,OR=Math.min(W,H)*.25,OB=OR*.32;'
+          'const STARS=Array.from({length:140},()=>({x:Math.random()*W,y:Math.random()*H,r:.4+Math.random()*1.1,a:.08+Math.random()*.55}));'
+          'let t=0,msgShown=false;'
+          'function loop(){'
+          '  t+=.012;ctx.fillStyle="#020108";ctx.fillRect(0,0,W,H);'
+          '  STARS.forEach(s=>{ctx.fillStyle=`rgba(200,190,255,${s.a})`;'
+          '    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();});'
+          '  // back orbit arc'
+          '  ctx.beginPath();ctx.ellipse(CX,CY,OR,OB,0,0,Math.PI);'
+          '  ctx.strokeStyle="rgba(130,175,215,.14)";ctx.lineWidth=1.5;ctx.stroke();'
+          '  // planet'
+          '  const pg=ctx.createRadialGradient(CX-PR*.28,CY-PR*.3,0,CX,CY,PR);'
+          '  pg.addColorStop(0,"#5a7fc0");pg.addColorStop(.5,"#2d5890");pg.addColorStop(1,"#0e1e38");'
+          '  ctx.beginPath();ctx.arc(CX,CY,PR,0,Math.PI*2);ctx.fillStyle=pg;ctx.fill();'
+          '  // planet ring behind'
+          '  ctx.beginPath();ctx.ellipse(CX,CY,PR*1.75,PR*.46,0,Math.PI,Math.PI*2);'
+          '  ctx.strokeStyle="rgba(130,175,215,.28)";ctx.lineWidth=3;ctx.stroke();'
+          '  // back orbital letters'
+          '  const letters=NAME.toUpperCase().split("");'
+          '  letters.forEach((c,i)=>{'
+          '    const a=t+i*(Math.PI*2/letters.length);'
+          '    const inF=Math.sin(a)>0;if(inF)return;'
+          '    const ox=CX+Math.cos(a)*OR,oy=CY+Math.sin(a)*OB;'
+          '    const g=.45+.45*Math.sin(t*2+i);'
+          '    ctx.font=`bold ${Math.min(W*.042,17)}px "Dancing Script",cursive`;'
+          '    ctx.textAlign="center";ctx.textBaseline="middle";'
+          '    ctx.fillStyle=`rgba(180,210,255,${.4+g*.3})`;'
+          '    ctx.shadowColor="rgba(140,190,255,.5)";ctx.shadowBlur=7;'
+          '    ctx.fillText(c,ox,oy);ctx.shadowBlur=0;});'
+          '  // planet ring in front'
+          '  ctx.beginPath();ctx.ellipse(CX,CY,PR*1.75,PR*.46,0,0,Math.PI);'
+          '  ctx.strokeStyle="rgba(100,145,185,.18)";ctx.lineWidth=3;ctx.stroke();'
+          '  // front orbital letters'
+          '  letters.forEach((c,i)=>{'
+          '    const a=t+i*(Math.PI*2/letters.length);'
+          '    const inF=Math.sin(a)>0;if(!inF)return;'
+          '    const ox=CX+Math.cos(a)*OR,oy=CY+Math.sin(a)*OB;'
+          '    const g=.45+.45*Math.sin(t*2+i);'
+          '    ctx.font=`bold ${Math.min(W*.042,17)}px "Dancing Script",cursive`;'
+          '    ctx.textAlign="center";ctx.textBaseline="middle";'
+          '    ctx.fillStyle=`rgba(200,225,255,${.55+g*.35})`;'
+          '    ctx.shadowColor="rgba(150,200,255,.6)";ctx.shadowBlur=9;'
+          '    ctx.fillText(c,ox,oy);ctx.shadowBlur=0;});'
+          '  // front orbit arc'
+          '  ctx.beginPath();ctx.ellipse(CX,CY,OR,OB,0,Math.PI,Math.PI*2);'
+          '  ctx.strokeStyle="rgba(130,175,215,.14)";ctx.lineWidth=1.5;ctx.stroke();'
+          '  if(!msgShown&&t>5){msgShown=true;showFin();}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},52);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#020108;overflow:hidden}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);'
+            f'background:rgba(2,1,8,.97);border-radius:18px;padding:26px 28px 22px;'
+            f'border:1px solid rgba(100,160,220,.16);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(100,160,220,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#e0f0ff;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#7eb8e8;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(100,160,220,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
+
+
 GENERATORS = {
     "galaxy":      html_galaxy,
     "sakura":      html_sakura,
@@ -1380,6 +2246,16 @@ GENERATORS = {
     "chat":        html_chat,
     "recipe":      html_recipe,
     "polaroid":    html_polaroid,
+    # ── New formats (v7.0) ──────────────────────────────────────────────────
+    "vinyl":       html_vinyl,
+    "neon_sign":   html_neon_sign,
+    "boot_seq":    html_boot_seq,
+    "fortune":     html_fortune,
+    "hourglass":   html_hourglass,
+    "compass":     html_compass,
+    "signal":      html_signal,
+    "cityscape":   html_cityscape,
+    "planetarium": html_planetarium,
 }
 
 ALL_THEMES = [
@@ -1406,11 +2282,21 @@ ALL_THEMES = [
     {"name": "iMessage",           "slug": "chat",       "mood": "Intimate, Simple",   "story": "FORMAT: Fake iMessage conversation reveal"},
     {"name": "Recipe Card",        "slug": "recipe",     "mood": "Warm, Creative",     "story": "FORMAT: Recipe for a perfect day — she's the main ingredient"},
     {"name": "Polaroid Gallery",   "slug": "polaroid",   "mood": "Nostalgic, Tender",  "story": "FORMAT: 5 polaroids on a corkboard — flip to reveal"},
+    # ── v7.0 additions ───────────────────────────────────────────────────────
+    {"name": "Vinyl Record",       "slug": "vinyl",      "mood": "Warm, Nostalgic",    "story": "ANIM: Spinning record, needle drops, message plays"},
+    {"name": "Neon Sign",          "slug": "neon_sign",  "mood": "Bold, Electric",     "story": "ANIM: Name letters flicker on one by one in neon"},
+    {"name": "Boot Sequence",      "slug": "boot_seq",   "mood": "Playful, Witty",     "story": "TERMINAL: Computer boots up — she's the OS"},
+    {"name": "Fortune Cookie",     "slug": "fortune",    "mood": "Sweet, Surprising",  "story": "INTERACT: Tap to crack cookie, paper strip reveals"},
+    {"name": "Hourglass",          "slug": "hourglass",  "mood": "Patient, Warm",      "story": "ANIM: Sand falls; when empty, message appears"},
+    {"name": "Compass",            "slug": "compass",    "mood": "Sure, Loving",       "story": "ANIM: Needle spins chaotically, settles on 'you'"},
+    {"name": "Radar Signal",       "slug": "signal",     "mood": "Mysterious, Found",  "story": "ANIM: Radar sweep discovers her name letters"},
+    {"name": "City Lights",        "slug": "cityscape",  "mood": "Cinematic, Warm",    "story": "ANIM: Dark skyline — windows light up gradually"},
+    {"name": "Planetarium",        "slug": "planetarium","mood": "Vast, Quiet",        "story": "ANIM: Planet orbited by her name in space"},
 ]
 
-def get_html(theme, name, date_str):
+def get_html(theme, name, date_str, day_ord=0):
     fn = GENERATORS.get(theme["slug"], html_galaxy)
-    return fn(name, date_str)
+    return fn(name, date_str, day_ord)
 
 
 # ── GitHub API ─────────────────────────────────────────────────────────────────
@@ -1447,7 +2333,7 @@ def main():
     print(f"  ➡️   Next  : {next_theme['name']} — {next_theme['story']}")
     print(f"{'='*62}\n")
 
-    html = get_html(theme, HER_NAME, date_str)
+    html = get_html(theme, HER_NAME, date_str, ordinal)
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
