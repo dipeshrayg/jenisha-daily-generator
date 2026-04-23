@@ -108,1074 +108,848 @@ FONTS = '<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wgh
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. GALAXY — Constellation connect: stars appear → lines draw → heart in sky
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
+# STORY ANIMATIONS (slots 1-12) -- v6.0: 12 original concepts, each unique
+# Every slot is a completely different TYPE of experience.
+# ==============================================================================
 def html_galaxy(name, date_str):
-    msg = "Some things only make sense\nwhen you connect the dots.\n\nYou were always the pattern."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#03001a}}
-{start_css('#a78bfa','138,90,255')}
-{card_css('rgba(8,4,24,.97)','#e0d0ff','#a78bfa','138,90,255')}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#a78bfa','138,90,255')}
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;
-{TYPEWRITER_JS}
-// Background stars
-const BGSTARS=Array.from({{length:300}},()=>({{'x':Math.random(),'y':Math.random(),'r':.2+Math.random()*1.2,'a':.1+Math.random()*.5,'tp':Math.random()*Math.PI*2,'ts':.005+Math.random()*.012}}));
-function drawBg(){{
-  ctx.fillStyle='#03001a';ctx.fillRect(0,0,W,H);
-  BGSTARS.forEach(s=>{{s.tp+=s.ts;const a=s.a+Math.sin(s.tp)*.15;ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,180,255,${{Math.max(0,a)}})`;ctx.fill()}});
-}}
-// Heart constellation points
-function heartPts(n,cx,cy,sc){{
-  const pts=[];
-  for(let i=0;i<n;i++){{
-    const t=(i/n)*Math.PI*2;
-    const x=16*Math.pow(Math.sin(t),3);
-    const y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
-    pts.push({{x:cx+x*sc,y:cy+y*sc,lit:false,litT:0}});
-  }}
-  return pts;
-}}
-let phase=0,elapsed=0,prevT=0;
-let CSTARS=[],lineProgress=0,cardDone=false;
-function init(){{
-  const sc=Math.min(W*.024,H*.02);
-  CSTARS=heartPts(22,W/2,H*.43,sc);
-  CSTARS.forEach((s,i)=>{{s.litDelay=i*.08+Math.random()*.06;}});
-}}
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  init();
-  setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);
-}}
-function loop(ts){{
-  if(!prevT)prevT=ts;
-  const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  drawBg();
-  if(phase===1){{
-    // Stars appear one by one
-    CSTARS.forEach((s,i)=>{{
-      if(elapsed>s.litDelay){{s.lit=true;s.litT=Math.min(1,s.litT+dt*3);}}
-      if(!s.lit)return;
-      const glow=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,12*s.litT);
-      glow.addColorStop(0,'rgba(200,160,255,.9)');glow.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=glow;ctx.fillRect(s.x-14,s.y-14,28,28);
-      ctx.beginPath();ctx.arc(s.x,s.y,2.5*s.litT,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
-    }});
-    const lastDelay=CSTARS[CSTARS.length-1].litDelay+.5;
-    if(elapsed>lastDelay){{phase=2;elapsed=0;}}
-  }}
-  if(phase>=2){{
-    // Draw all stars
-    CSTARS.forEach(s=>{{
-      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,12);
-      g.addColorStop(0,'rgba(200,160,255,.9)');g.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=g;ctx.fillRect(s.x-14,s.y-14,28,28);
-      ctx.beginPath();ctx.arc(s.x,s.y,2.5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
-    }});
-  }}
-  if(phase===2){{
-    // Draw constellation lines progressively
-    lineProgress=Math.min(1,elapsed/2.5);
-    const totalSegs=CSTARS.length;
-    const drawn=lineProgress*totalSegs;
-    ctx.strokeStyle='rgba(180,140,255,.35)';ctx.lineWidth=1.2;ctx.setLineDash([4,6]);
-    for(let i=0;i<Math.floor(drawn);i++){{
-      const a=CSTARS[i],b=CSTARS[(i+1)%CSTARS.length];
-      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    }}
-    // Partial last segment
-    const partial=drawn-Math.floor(drawn);
-    if(Math.floor(drawn)<totalSegs){{
-      const a=CSTARS[Math.floor(drawn)],b=CSTARS[(Math.floor(drawn)+1)%CSTARS.length];
-      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(a.x+(b.x-a.x)*partial,a.y+(b.y-a.y)*partial);ctx.stroke();
-    }}
-    ctx.setLineDash([]);
-    if(lineProgress>=1&&!cardDone){{cardDone=true;phase=3;setTimeout(showCard,600);}}
-  }}
-  if(phase===3){{
-    // Full constellation glowing
-    ctx.strokeStyle='rgba(180,140,255,.35)';ctx.lineWidth=1.2;ctx.setLineDash([4,6]);
-    for(let i=0;i<CSTARS.length;i++){{const a=CSTARS[i],b=CSTARS[(i+1)%CSTARS.length];ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
-    ctx.setLineDash([]);
-    // Pulse glow on heart
-    const pulse=.5+.5*Math.sin(elapsed*2);
-    const hg=ctx.createRadialGradient(W/2,H*.43,0,W/2,H*.43,Math.min(W,H)*.22);
-    hg.addColorStop(0,`rgba(138,90,255,${{.06+pulse*.04}})`);hg.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=hg;ctx.fillRect(0,0,W,H);
-  }}
-  requestAnimationFrame(loop);
-}}
-function idleLoop(){{if(phase>0)return;drawBg();requestAnimationFrame(idleLoop);}}
-requestAnimationFrame(idleLoop);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;if(phase>0)init();}});
-</script></body></html>"""
+    """LIVE CODE EDITOR — JavaScript types itself; the code IS the love note."""
+    msg = "I keep building things\njust to have a reason.\n\nThis one was for you."
+    code = ('const YOU = "' + name + '";\n'
+            'const ME = "Dipesh";\n'
+            'const REASON = Infinity;\n\n'
+            '// this runs first every morning\n'
+            'function firstThought() {\n'
+            '  return YOU; // reliable\n'
+            '}\n\n'
+            '// warning: no exit condition\n'
+            "// I don't plan to add one\n"
+            'setInterval(() => {\n'
+            '  thinkAbout(YOU);\n'
+            '}, 1000);\n\n'
+            '// always returns true\n'
+            'function isItAGoodDay() {\n'
+            '  return YOU !== undefined;\n'
+            '}\n\n'
+            "/* I don't know exactly when\n"
+            '   this started. But it\n'
+            '   compiles clean. Keeping it. */\n\n'
+            'console.log("made this for " + YOU);')
+    cj = json.dumps(code)
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const CODE={cj};const NAME={nj};const DATE={dj};'
+          'const KWS=["const ","let ","function ","return ","setInterval","console.log","Infinity"];'
+          'let ci=0,inStr=false,strCh="",inCom=false,comMl=false;'
+          'const out=document.getElementById("out"),cur=document.getElementById("cur");'
+          'function apd(txt,cls){'
+          '  const last=out.lastChild;'
+          '  if(last&&last.nodeType===1&&last.className===(cls||"")&&cls!==undefined){last.textContent+=txt;return;}'
+          '  const s=document.createElement("span");if(cls)s.className=cls;s.textContent=txt;out.appendChild(s);}'
+          'function tp(){'
+          '  if(ci>=CODE.length){out.appendChild(cur);setTimeout(showFin,2400);return;}'
+          '  const c=CODE[ci],sl=CODE.slice(ci);'
+          '  if(c==="\\n"){out.appendChild(document.createElement("br"));if(!comMl)inCom=false;ci++;out.appendChild(cur);out.scrollTop=out.scrollHeight;setTimeout(tp,130+Math.random()*70);return;}'
+          '  if(inCom||comMl){'
+          '    if(comMl&&sl.startsWith("*/")){apd("*/","com");inCom=false;comMl=false;ci+=2;}'
+          '    else{apd(c,"com");ci++;}}'
+          '  else if(inStr){apd(c,"str");if(c===strCh&&CODE[ci-1]!=="\\\\")inStr=false;ci++;}'
+          '  else if(sl.startsWith("//")){apd("//","com");inCom=true;ci+=2;}'
+          '  else if(sl.startsWith("/*")){apd("/*","com");comMl=true;ci+=2;}'
+          '  else if(c===\'"\'){inStr=true;strCh=c;apd(c,"str");ci++;}'
+          '  else{'
+          '    let hit=false;'
+          '    for(const kw of KWS){if(sl.startsWith(kw)){apd(kw,"kw");ci+=kw.length;hit=true;break;}}'
+          '    if(!hit){apd(c,"");ci++;}}'
+          '  out.appendChild(cur);out.scrollTop=out.scrollHeight;'
+          '  setTimeout(tp,15+Math.random()*13+(c===","||c===";"?28:0));}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},46);}'
+          'tp();')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>for_{name.lower()}.js</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#0d1117;overflow:hidden;font-family:"Fira Code","Courier New",monospace}}'
+            f'#ed{{position:fixed;inset:0;display:flex;flex-direction:column}}'
+            f'#tb{{background:#161b22;padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;border-bottom:1px solid #21262d}}'
+            f'.dot{{width:12px;height:12px;border-radius:50%}}.d1{{background:#ff5f56}}.d2{{background:#ffbd2e}}.d3{{background:#27c93f}}'
+            f'.fn{{color:#484f58;font-size:.82rem;margin-left:8px}}'
+            f'#area{{flex:1;padding:20px;overflow-y:auto;font-size:clamp(.75rem,2.2vw,.95rem);line-height:2;color:#e6edf3}}'
+            f'.kw{{color:#c084fc}}.str{{color:#86efac}}.com{{color:#484f58;font-style:italic}}'
+            f'#cur{{display:inline-block;width:2px;height:1em;background:#c084fc;vertical-align:middle;animation:blink 1s step-end infinite}}'
+            f'@keyframes blink{{50%{{opacity:0}}}}'
+            f'#fin{{position:fixed;inset:0;background:rgba(13,17,23,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 1.2s;padding:24px;text-align:center}}'
+            f'#fin.show{{opacity:1;pointer-events:all}}'
+            f'.ft{{font-family:"Dancing Script",cursive;font-size:clamp(2rem,8vw,3rem);color:#c084fc;margin-bottom:18px}}'
+            f'.fm{{font-family:"Courier New",monospace;font-size:clamp(.95rem,3vw,1.25rem);color:#86efac;line-height:1.9;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.7rem;color:#c084fc;margin-top:18px}}'
+            f'.fd{{font-size:.7rem;color:rgba(192,132,252,.28);margin-top:3px;letter-spacing:.08em}}</style></head><body>'
+            f'<div id="ed"><div id="tb"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div>'
+            f'<span class="fn">for_{name.lower()}.js</span></div>'
+            f'<div id="area"><span id="out"></span><span id="cur"></span></div></div>'
+            f'<div id="fin"><div class="ft">{name}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 2. SAKURA — Tree (already deployed Apr 21, kept for cycle continuity)
-# ══════════════════════════════════════════════════════════════════════════════
 def html_sakura(name, date_str):
-    msg = "Made this for you.\nCouldn't fit all the reasons\nonto one tree.\n\nSo I just used blossoms."
-    pc = json.dumps(["#ffb7c5","#ffc8d4","#ffdde8","#ffadc0","#ffe0ea"])
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#18060f}}
-{start_css('#ffb7c5','255,150,200')}
-{card_css('rgba(255,251,252,.97)','#3a1020','#c2185b','255,150,200')}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#ffb7c5','255,150,200')}
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-const STARS=Array.from({{length:220}},()=>({{'x':Math.random(),'y':Math.random(),'r':.3+Math.random()*1.4,'base':.1+Math.random()*.55,'tp':Math.random()*Math.PI*2,'ts':.006+Math.random()*.014}}));
-function drawBg(){{const bg=ctx.createRadialGradient(W/2,H*.41,0,W/2,H*.41,Math.max(W,H)*.75);bg.addColorStop(0,'#18060f');bg.addColorStop(1,'#080208');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);STARS.forEach(s=>{{s.tp+=s.ts;const a=s.base+Math.sin(s.tp)*.22;ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,210,225,${{Math.max(0,a)}})`;ctx.fill()}});}}
-let HCX=W/2,HCY=H*.41,S=Math.min(W*.022,H*.018);
-function recalc(){{HCX=W/2;HCY=H*.41;S=Math.min(W*.022,H*.018);}}
-function heartPt(t){{const x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));return{{x:HCX+x*S,y:HCY+y*S}};}}
-const N=28;let BR=[];
-function buildBr(){{BR=[];const tipY=heartPt(Math.PI).y,baseY=H*.855;for(let i=0;i<N;i++){{const t=(i/N)*Math.PI*2,tip=heartPt(t);const vf=Math.max(0,Math.min(.72,(tip.y-tipY)/(baseY-tipY)));const bx=HCX+(tip.x-HCX)*.06,by=tipY+vf*(baseY-tipY);const cx2=bx+(tip.x-bx)*.42+(Math.random()-.5)*S*4,cy2=by+(tip.y-by)*.36-S*6;const thick=1.2+Math.max(0,(tip.y-HCY)/(17*S))*2;BR.push({{base:{{x:bx,y:by}},ctrl:{{x:cx2,y:cy2}},tip,progress:0,delay:i*.038,width:thick}});}}}}
-buildBr();
-function bPt(p0,p1,p2,t){{const u=1-t;return{{x:u*u*p0.x+2*u*t*p1.x+t*t*p2.x,y:u*u*p0.y+2*u*t*p1.y+t*t*p2.y}};}}
-function drawBr(b,p){{if(p<=0)return;const steps=24;ctx.beginPath();ctx.moveTo(b.base.x,b.base.y);const end=Math.min(1,p);for(let i=1;i<=steps;i++){{const f=i/steps;if(f>end+.001)break;const pt=bPt(b.base,b.ctrl,b.tip,Math.min(end,f));ctx.lineTo(pt.x,pt.y);}}ctx.strokeStyle='rgba(90,52,22,.82)';ctx.lineWidth=b.width;ctx.lineCap='round';ctx.stroke();}}
-function drawTrunk(p){{if(p<=0)return;const tipY=heartPt(Math.PI).y,baseY=H*.855;for(let i=0;i<28;i++){{const f0=i/28,f1=(i+1)/28;if(f0>p)break;const y0=baseY-(baseY-tipY)*f0,y1=baseY-(baseY-tipY)*Math.min(p,f1);ctx.beginPath();ctx.moveTo(HCX,y0);ctx.lineTo(HCX,y1);ctx.strokeStyle='rgba(70,38,14,.88)';ctx.lineWidth=Math.max(1.5,11-f0*7.5);ctx.lineCap='round';ctx.stroke();}}}}
-const PC={pc};
-function drawBlossom(x,y,sz,a){{if(a<=0||sz<=0)return;ctx.save();ctx.globalAlpha=Math.min(1,a);for(let i=0;i<5;i++){{const ang=(i/5)*Math.PI*2-Math.PI/10;ctx.beginPath();ctx.arc(x+Math.cos(ang)*sz*.62,y+Math.sin(ang)*sz*.62,sz*.54,0,Math.PI*2);ctx.fillStyle=PC[i%PC.length];ctx.fill();}}ctx.beginPath();ctx.arc(x,y,sz*.3,0,Math.PI*2);ctx.fillStyle='#fffde7';ctx.fill();ctx.restore();}}
-const PTLS=[];class FP{{constructor(){{this.x=Math.random()*W*1.3-W*.15;this.y=-16;this.vx=-.4+Math.random()*.9;this.vy=.5+Math.random()*1.1;this.rot=Math.random()*Math.PI*2;this.rs=(Math.random()-.5)*.045;this.sz=3.5+Math.random()*5;this.a=.45+Math.random()*.45;this.col=PC[Math.floor(Math.random()*PC.length)];}}tick(){{this.x+=this.vx;this.y+=this.vy;this.rot+=this.rs;this.vx+=(Math.random()-.5)*.04;if(this.y>H+20){{this.x=Math.random()*W*1.3-W*.15;this.y=-16;}}}}draw(){{ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.rot);ctx.globalAlpha=this.a;ctx.beginPath();ctx.ellipse(0,0,this.sz,this.sz*.55,0,0,Math.PI*2);ctx.fillStyle=this.col;ctx.fill();ctx.restore();}}}}
-let phase=0,tp=0,el=0,pT=0,done=false;
-function begin(){{document.getElementById('start').classList.add('gone');setTimeout(()=>{{phase=1;pT=performance.now();requestAnimationFrame(loop);}},1400);}}
-function loop(ts){{if(!pT)pT=ts;const dt=Math.min(.08,(ts-pT)/1000);pT=ts;el+=dt;drawBg();
-if(phase>=3){{const g=ctx.createRadialGradient(HCX,HCY-S*2,0,HCX,HCY,S*22);g.addColorStop(0,'rgba(255,150,200,.07)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}}
-if(phase===1){{tp=Math.min(1,el/1.3);drawTrunk(tp);if(tp>=1){{phase=2;el=0;}}}}
-if(phase>=2)drawTrunk(1);
-if(phase>=2){{let done2=true;BR.forEach(b=>{{if(phase===2)b.progress=Math.min(1,Math.max(0,(el-b.delay)/.65));if(b.progress<1)done2=false;drawBr(b,b.progress);}});if(phase===2&&done2){{phase=3;el=0;for(let i=0;i<55;i++)PTLS.push(new FP());}}}}
-if(phase>=3){{BR.forEach((b,i)=>{{const bp=Math.min(1,Math.max(0,(el-i*.055)/.45));drawBlossom(b.tip.x,b.tip.y,S*1.25*bp,bp);}});if(phase===3){{const last=BR.length*.055+.45;if(el>last+.9&&!done){{done=true;phase=4;el=0;setTimeout(showCard,500);}}}}}}
-if(phase===4){{BR.forEach(b=>drawBlossom(b.tip.x,b.tip.y,S*1.25,1));PTLS.forEach(p=>{{p.tick();p.draw();}});}}
-requestAnimationFrame(loop);}}
-function idle(){{if(phase>0)return;drawBg();requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;recalc();buildBr();}});
-</script></body></html>"""
+    """RUNAWAY BUTTON — 'Will you be mine?' NO button runs away; YES triggers hearts."""
+    msg = "Wasn't going to give you\nthe option anyway.\n\nJust wanted you to know."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'let tries=0;'
+          'const noBtn=document.getElementById("no"),yesBtn=document.getElementById("yes");'
+          'const W=window.innerWidth,H=window.innerHeight;'
+          'let nx=W/2+120,ny=H/2;'
+          'function moveNo(cx,cy){'
+          '  const dx=nx-cx,dy=ny-cy,dist=Math.sqrt(dx*dx+dy*dy);'
+          '  if(dist>160)return;'
+          '  const esc=180/Math.max(dist,1);'
+          '  nx=Math.max(60,Math.min(W-60,nx+dx/dist*esc));'
+          '  ny=Math.max(60,Math.min(H-60,ny+dy/dist*esc));'
+          '  noBtn.style.left=nx+"px";noBtn.style.top=ny+"px";'
+          '  tries++;'
+          '  if(tries===4){noBtn.style.opacity="0";noBtn.style.pointerEvents="none";'
+          '    document.getElementById("hint").textContent="(gave up running)";}'
+          '}'
+          'document.addEventListener("mousemove",e=>moveNo(e.clientX,e.clientY));'
+          'document.addEventListener("touchmove",e=>{e.preventDefault();moveNo(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});'
+          'yesBtn.addEventListener("click",sayYes);'
+          'function sayYes(){'
+          '  document.getElementById("question").style.display="none";'
+          '  document.getElementById("btns").style.display="none";'
+          '  document.getElementById("hint").style.display="none";'
+          '  const cv=document.getElementById("c");cv.style.display="block";'
+          '  const ctx=cv.getContext("2d");'
+          '  cv.width=window.innerWidth;cv.height=window.innerHeight;'
+          '  const parts=[];'
+          '  for(let i=0;i<80;i++){parts.push({x:W/2,y:H/2,vx:(Math.random()-.5)*16,vy:-3-Math.random()*12,a:1,col:`hsl(${330+Math.random()*40},90%,${65+Math.random()*15}%)`});}'
+          '  function draw(){'
+          '    ctx.clearRect(0,0,cv.width,cv.height);'
+          '    parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.35;p.a-=.018;'
+          '      if(p.a<=0)return;'
+          '      ctx.save();ctx.globalAlpha=p.a;ctx.translate(p.x,p.y);ctx.scale(.9,.9);'
+          '      ctx.beginPath();ctx.moveTo(0,-4);ctx.bezierCurveTo(0,-11,12,-11,12,-4);ctx.bezierCurveTo(12,3,0,12,0,16);ctx.bezierCurveTo(0,12,-12,3,-12,-4);ctx.bezierCurveTo(-12,-11,0,-11,0,-4);'
+          '      ctx.fillStyle=p.col;ctx.fill();ctx.restore();});'
+          '    if(parts.some(p=>p.a>0))requestAnimationFrame(draw);'
+          '    else showFin();}'
+          '  draw();}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},46);}'
+          'noBtn.style.left=nx+"px";noBtn.style.top=ny+"px";')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#fdf6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Caveat",cursive;overflow:hidden}}'
+            f'#question{{font-family:"Dancing Script",cursive;font-size:clamp(2.2rem,9vw,3.5rem);color:#1a0030;text-align:center;margin-bottom:40px}}'
+            f'#btns{{display:flex;gap:32px;align-items:center}}'
+            f'#yes{{background:#c084fc;color:#fff;border:none;padding:14px 36px;border-radius:30px;font-family:"Caveat",cursive;font-size:1.5rem;cursor:pointer;box-shadow:0 6px 30px rgba(192,132,252,.4);transition:transform .15s}}'
+            f'#yes:hover{{transform:scale(1.06)}}'
+            f'#no{{position:fixed;background:rgba(0,0,0,.06);color:#999;border:1.5px solid #ddd;padding:12px 28px;border-radius:30px;font-family:"Caveat",cursive;font-size:1.4rem;cursor:pointer;transition:opacity .5s}}'
+            f'#hint{{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);color:rgba(0,0,0,.25);font-size:.95rem;letter-spacing:.1em}}'
+            f'#c{{display:none;position:fixed;inset:0;pointer-events:none}}'
+            f'#fin{{position:fixed;inset:0;background:rgba(253,246,255,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 1.2s;padding:24px;text-align:center}}'
+            f'#fin.show{{opacity:1;pointer-events:all}}'
+            f'.ft{{font-family:"Dancing Script",cursive;font-size:clamp(2rem,9vw,3rem);color:#c084fc;margin-bottom:20px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.1rem,3.5vw,1.5rem);color:#3a0060;line-height:1.88;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.7rem;color:#c084fc;margin-top:18px}}'
+            f'.fd{{font-size:.7rem;color:rgba(192,132,252,.4);margin-top:3px;letter-spacing:.08em}}</style></head><body>'
+            f'<div id="question">Will you be mine?</div>'
+            f'<div id="btns"><button id="yes">Yes 💗</button></div>'
+            f'<button id="no">No</button>'
+            f'<div id="hint">try clicking no</div>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="fin"><div class="ft">{name}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 3. OCEAN — Message in a bottle washes ashore
-# ══════════════════════════════════════════════════════════════════════════════
 def html_ocean(name, date_str):
-    msg = "I put this in a bottle\nand trusted the ocean.\n\nHope it found you."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#001828;font-family:'Caveat',cursive}}
-{start_css('#4fc3f7','79,195,247')}
-{card_css('rgba(255,252,245,.97)','#1a3a50','#0288d1','79,195,247')}
-#scene{{position:fixed;inset:0;z-index:10;pointer-events:none;overflow:hidden}}
-.bottle{{position:absolute;font-size:clamp(3rem,10vw,5rem);bottom:-120px;left:50%;transform:translateX(-50%) rotate(-15deg);transition:bottom 2.5s cubic-bezier(.2,.8,.3,1),transform 2s ease;filter:drop-shadow(0 8px 20px rgba(0,100,150,.4))}}
-.bottle.ashore{{bottom:22%;transform:translateX(-50%) rotate(8deg)}}
-.scroll{{position:absolute;background:#fffef5;border-radius:8px;padding:20px 22px;width:min(300px,80vw);font-size:clamp(1rem,3vw,1.15rem);line-height:1.7;color:#1a2a40;box-shadow:0 8px 30px rgba(0,0,0,.25);left:50%;transform:translateX(-50%) translateY(40px);opacity:0;transition:opacity .8s ease,transform .8s ease;top:18%}}
-.scroll.open{{opacity:1;transform:translateX(-50%) translateY(0)}}
-.scroll-name{{font-family:'Dancing Script',cursive;font-size:1.5rem;color:#0277bd;margin-bottom:8px}}
-.scroll-msg{{white-space:pre-wrap;min-height:3em}}
-.scroll-from{{font-family:'Dancing Script',cursive;font-size:1.2rem;color:#0277bd;text-align:right;margin-top:10px}}
-.scroll-date{{font-size:.65rem;color:rgba(0,0,0,.3);text-align:right}}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#4fc3f7','79,195,247')}
-<div id="scene">
-  <div class="bottle" id="bottle">🍾</div>
-  <div class="scroll" id="scroll">
-    <div class="scroll-name">Hey {name},</div>
-    <div class="scroll-msg" id="smsg"></div>
-    <div class="scroll-from">— Dipesh</div>
-    <div class="scroll-date">{date_str}</div>
-  </div>
-</div>
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;
-function typeMsg(el,text,spd){{el.textContent='';let i=0;const iv=setInterval(()=>{{if(i>=text.length){{clearInterval(iv);return;}}el.textContent+=text[i++];}},spd);}}
-// Wave system
-const waves=[];
-for(let i=0;i<5;i++)waves.push({{ph:Math.random()*Math.PI*2,spd:.008+Math.random()*.006,amp:18+i*12,yFrac:.55+i*.07,alpha:.15+i*.04}});
-let wt=0;
-function drawScene(){{
-  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#001828');bg.addColorStop(.5,'#002a40');bg.addColorStop(1,'#003350');
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // Stars in sky
-  if(!window._wstars)window._wstars=Array.from({{length:120}},()=>({{'x':Math.random(),'y':Math.random()*.45,'r':.3+Math.random()*1,'a':.1+Math.random()*.4,'tp':Math.random()*Math.PI*2,'ts':.005+Math.random()*.01}}));
-  window._wstars.forEach(s=>{{s.tp+=s.ts;ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(180,230,255,${{Math.max(0,s.a+Math.sin(s.tp)*.15)}})`;ctx.fill()}});
-  wt+=.012;
-  waves.forEach(w=>{{
-    ctx.beginPath();ctx.moveTo(0,w.yFrac*H);
-    for(let x=0;x<=W+4;x+=4){{ctx.lineTo(x,w.yFrac*H+Math.sin(x*.005+w.ph+wt*w.spd*100)*w.amp);}}
-    ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
-    ctx.fillStyle=`rgba(0,100,170,${{w.alpha}})`;ctx.fill();w.ph+=w.spd;
-  }});
-  // Moon
-  ctx.beginPath();ctx.arc(W*.75,H*.12,22,0,Math.PI*2);ctx.fillStyle='rgba(220,240,255,.18)';ctx.fill();
-  ctx.beginPath();ctx.arc(W*.75+8,H*.12-3,20,0,Math.PI*2);ctx.fillStyle='#001828';ctx.fill();
-}}
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  // Bottle washes in
-  setTimeout(()=>document.getElementById('bottle').classList.add('ashore'),1400);
-  // Cork pops → scroll appears
-  setTimeout(()=>{{
-    document.getElementById('bottle').textContent='✉️';
-    setTimeout(()=>{{
-      document.getElementById('scroll').classList.add('open');
-      setTimeout(()=>typeMsg(document.getElementById('smsg'),MSG,44),600);
-    }},600);
-  }},4200);
-}}
-function loop(){{ctx.clearRect(0,0,W,H);drawScene();requestAnimationFrame(loop);}}loop();
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """TEXT ART HEART — 'i like you' repeated text forms a heart outline; click to scatter & reform."""
+    msg = "You keep showing up in my thoughts.\nI stopped fighting it a while ago."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    phrases = json.dumps(["i like you", name.lower(), "a lot", "really", "quite a bit", "yes you", "just you"])
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          f'const PH={phrases};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.44,SC=Math.min(W*.018,H*.015);'
+          'function heartPt(t){const x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));return{x:CX+x*SC,y:CY+y*SC};}'
+          'const N=120;const particles=[];'
+          'for(let i=0;i<N;i++){'
+          '  const t=(i/N)*Math.PI*2,hp=heartPt(t);'
+          '  const txt=PH[i%PH.length];'
+          '  particles.push({tx:hp.x,ty:hp.y,x:Math.random()*W,y:Math.random()*H,'
+          '    vx:0,vy:0,txt,alpha:0,scattered:false,hue:330+Math.random()*40});}'
+          'let scattered=false,scatterT=0;'
+          'cv.addEventListener("click",()=>{if(scattered){particles.forEach(p=>{p.tx=p.homeX;p.ty=p.homeY;p.scattered=false;});scattered=false;}else{particles.forEach(p=>{p.homeX=p.tx;p.homeY=p.ty;const ang=Math.random()*Math.PI*2,r=50+Math.random()*200;p.tx=CX+Math.cos(ang)*r;p.ty=CY+Math.sin(ang)*r;p.scattered=true;});scattered=true;}});'
+          'cv.addEventListener("touchend",e=>{e.preventDefault();cv.dispatchEvent(new Event("click"));},{passive:false});'
+          'let t=0,msgShown=false;'
+          'function loop(){'
+          '  t+=.016;'
+          '  ctx.fillStyle="rgba(5,0,14,.18)";ctx.fillRect(0,0,W,H);'
+          '  particles.forEach((p,i)=>{'
+          '    p.alpha=Math.min(1,p.alpha+.018);'
+          '    const dx=p.tx-p.x,dy=p.ty-p.y;'
+          '    p.x+=dx*.08;p.y+=dy*.08;'
+          '    const glow=.5+.5*Math.sin(t*2+i*.3);'
+          '    ctx.save();ctx.globalAlpha=p.alpha*(.55+glow*.35);'
+          '    ctx.font=`${Math.floor(9+Math.random()*.5)}px "Caveat",cursive`;'
+          '    ctx.fillStyle=`hsl(${p.hue},85%,${70+glow*15}%)`;'
+          '    ctx.shadowColor=`hsl(${p.hue},85%,75%)`;ctx.shadowBlur=6*glow;'
+          '    ctx.fillText(p.txt,p.x,p.y);ctx.restore();});'
+          '  if(!msgShown&&t>6){msgShown=true;showFin();}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},50);}'
+          'loop();')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#05000e;overflow:hidden}}'
+            f'#hint{{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);font-family:"Caveat",cursive;font-size:.9rem;color:rgba(255,160,220,.3);letter-spacing:.12em;animation:bl 2.5s infinite}}'
+            f'@keyframes bl{{0%,100%{{opacity:.25}}50%{{opacity:.7}}}}'
+            f'#fin{{position:fixed;bottom:-200px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(10,0,20,.95);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(192,132,252,.15);transition:bottom 1.2s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.8rem;color:rgba(192,132,252,.45);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.1rem,3.5vw,1.4rem);color:#e9d5ff;line-height:1.82;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#c084fc;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(192,132,252,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="hint">tap to scatter</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 4. FIREFLY — Fireflies drift, spell her name, swarm into heart
-# ══════════════════════════════════════════════════════════════════════════════
 def html_firefly(name, date_str):
-    msg = "You make quiet places\nfeel less quiet.\n\nThought you should know that."
-    name_upper = name.upper()
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#03080a}}
-{start_css('#b8ff6e','184,255,110')}
-{card_css('rgba(4,12,6,.97)','#c8ffb0','#aaee44','160,240,60')}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#b8ff6e','184,255,110')}
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-// Phase: 0=idle, 1=drift, 2=spelling name, 3=swarm to heart, 4=heart+card
-let phase=0,elapsed=0,prevT=0,cardDone=false;
-// Heart target points
-function heartPts(n,cx,cy,sc){{const pts=[];for(let i=0;i<n;i++){{const t=(i/n)*Math.PI*2,x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));pts.push({{x:cx+x*sc,y:cy+y*sc}});}}return pts;}}
-// Simple letter pixel positions for name
-function letterPts(char,ox,oy,sz){{
-  const segs={{
-    'A':[[.5,0,0,1],[.5,0,1,1],[0,1,.15,.5],[.85,.5,1,.5]],
-    'B':[[0,0,0,1],[0,0,.7,0],[0,.5,.7,.5],[0,1,.7,1],[.7,0,.9,.2],[.9,.2,.7,.5],[.7,.5,.9,.7],[.9,.7,.7,1]],
-    'C':[[.9,.1,0,.1],[0,.1,0,.9],[0,.9,.9,.9]],
-    'D':[[0,0,0,1],[0,0,.6,0],[.6,0,1,.3],[1,.3,1,.7],[1,.7,.6,1],[.6,1,0,1]],
-    'E':[[0,0,0,1],[0,0,1,0],[0,.5,.8,.5],[0,1,1,1]],
-    'F':[[0,0,0,1],[0,0,1,0],[0,.5,.8,.5]],
-    'G':[[1,.1,.3,.1],[.3,.1,0,.3],[0,.3,0,.7],[0,.7,.3,.9],[.3,.9,1,.9],[1,.9,1,.5],[1,.5,.6,.5]],
-    'H':[[0,0,0,1],[1,0,1,1],[0,.5,1,.5]],
-    'I':[[.3,0,.7,0],[.5,0,.5,1],[.3,1,.7,1]],
-    'J':[[.2,0,.8,0],[.6,0,.6,.8],[.6,.8,.3,.9],[.3,.9,.1,.7]],
-    'K':[[0,0,0,1],[0,.5,1,0],[0,.5,1,1]],
-    'L':[[0,0,0,1],[0,1,1,1]],
-    'M':[[0,0,0,1],[0,0,.5,.6],[.5,.6,1,0],[1,0,1,1]],
-    'N':[[0,0,0,1],[0,0,1,1],[1,0,1,1]],
-    'O':[[0,.1,.2,0],[.2,0,.8,0],[.8,0,1,.1],[1,.1,1,.9],[1,.9,.8,1],[.8,1,.2,1],[.2,1,0,.9],[0,.9,0,.1]],
-    'P':[[0,0,0,1],[0,0,.7,0],[.7,0,1,.2],[1,.2,1,.4],[1,.4,.7,.5],[.7,.5,0,.5]],
-    'Q':[[0,.1,.2,0],[.2,0,.8,0],[.8,0,1,.1],[1,.1,1,.9],[1,.9,.8,1],[.8,1,.2,1],[.2,1,0,.9],[0,.9,0,.1],[.6,.7,1,1]],
-    'R':[[0,0,0,1],[0,0,.7,0],[.7,0,1,.2],[1,.2,1,.4],[1,.4,.7,.5],[.7,.5,0,.5],[.4,.5,1,1]],
-    'S':[[1,.1,.3,.1],[.3,.1,0,.3],[0,.3,0,.5],[0,.5,.7,.5],[.7,.5,1,.7],[1,.7,1,.9],[1,.9,.3,.9],[.3,.9,0,.8]],
-    'T':[[0,0,1,0],[.5,0,.5,1]],
-    'U':[[0,0,0,.8],[0,.8,.2,1],[.2,1,.8,1],[.8,1,1,.8],[1,.8,1,0]],
-    'V':[[0,0,.5,1],[1,0,.5,1]],
-    'W':[[0,0,.25,1],[.25,1,.5,.5],[.5,.5,.75,1],[.75,1,1,0]],
-    'X':[[0,0,1,1],[1,0,0,1]],
-    'Y':[[0,0,.5,.5],[1,0,.5,.5],[.5,.5,.5,1]],
-    'Z':[[0,0,1,0],[1,0,0,1],[0,1,1,1]],
-  }};
-  const segsArr=segs[char]||segs['A'];
-  const pts=[];
-  segsArr.forEach(([x1,y1,x2,y2])=>{{
-    const steps=Math.ceil(Math.sqrt((x2-x1)**2+(y2-y1)**2)*8);
-    for(let i=0;i<=steps;i++){{const t=i/steps;pts.push({{x:ox+(x1+(x2-x1)*t)*sz,y:oy+(y1+(y2-y1)*t)*sz}});}}
-  }});
-  return pts;
-}}
-// Build name targets
-function buildNameTargets(){{
-  const chars='{name_upper}'.split('');
-  const charW=Math.min(W*.09,50),padding=charW*.3;
-  const totalW=chars.length*(charW+padding)-padding;
-  const startX=(W-totalW)/2;
-  const startY=H*.35;
-  let pts=[];
-  chars.forEach((c,i)=>{{pts=[...pts,...letterPts(c,startX+i*(charW+padding),startY,charW)]}});
-  return pts;
-}}
-const NFF=Math.min(120,Math.max(60,'{name_upper}'.length*15));
-let fireflies=[];
-let nameTargets=[];
-let htargets=[];
-function init(){{
-  nameTargets=buildNameTargets();
-  const sc=Math.min(W*.022,H*.018);
-  htargets=heartPts(NFF,W/2,H*.42,sc);
-  fireflies=Array.from({{length:NFF}},(_,i)=>{{return{{
-    x:Math.random()*W,y:Math.random()*H,
-    vx:(Math.random()-.5)*.8,vy:(Math.random()-.5)*.8,
-    tx:0,ty:0,phase_t:Math.random()*Math.PI*2,
-    glow:.5+Math.random()*.5,size:1.5+Math.random()*1.5,
-  }}}});
-}}
-function begin(){{document.getElementById('start').classList.add('gone');init();setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);}}
-function drawBg(){{
-  ctx.fillStyle='#03080a';ctx.fillRect(0,0,W,H);
-  // Faint trees silhouette
-  ctx.fillStyle='rgba(0,15,5,.8)';
-  for(let i=0;i<8;i++){{const tx=W*(i/7),tw=20+Math.random()*15,th=H*.35+Math.random()*H*.15;ctx.fillRect(tx-tw/2,H-th,tw,th);}}
-}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  drawBg();
-  if(phase===1){{
-    // Random drift for 1.5s then start spelling
-    fireflies.forEach(f=>{{
-      f.phase_t+=.04;f.x+=f.vx;f.y+=f.vy;
-      f.vx+=(Math.random()-.5)*.08;f.vy+=(Math.random()-.5)*.08;
-      f.vx*=.96;f.vy*=.96;
-      if(f.x<0)f.x=W;if(f.x>W)f.x=0;if(f.y<0)f.y=H;if(f.y>H)f.y=0;
-      const a=f.glow*(.5+.5*Math.sin(f.phase_t*3));
-      const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.size*4);
-      g.addColorStop(0,`rgba(180,255,100,${{a}})`);g.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=g;ctx.fillRect(f.x-f.size*4,f.y-f.size*4,f.size*8,f.size*8);
-      ctx.beginPath();ctx.arc(f.x,f.y,f.size,0,Math.PI*2);ctx.fillStyle=`rgba(220,255,150,${{a}})`;ctx.fill();
-    }});
-    if(elapsed>1.5){{phase=2;elapsed=0;fireflies.forEach((f,i)=>{{const tgt=nameTargets[i%nameTargets.length];f.tx=tgt.x;f.ty=tgt.y;}});}}
-  }}
-  if(phase===2){{
-    const prog=Math.min(1,elapsed/2);
-    fireflies.forEach((f,i)=>{{
-      f.phase_t+=.04;
-      f.x+=(f.tx-f.x)*prog*.08;f.y+=(f.ty-f.y)*prog*.08;
-      const a=f.glow*(.6+.4*Math.sin(f.phase_t*3));
-      const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.size*5);
-      g.addColorStop(0,`rgba(180,255,100,${{a}})`);g.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=g;ctx.fillRect(f.x-f.size*5,f.y-f.size*5,f.size*10,f.size*10);
-      ctx.beginPath();ctx.arc(f.x,f.y,f.size,0,Math.PI*2);ctx.fillStyle=`rgba(220,255,150,${{a}})`;ctx.fill();
-    }});
-    if(prog>=1&&elapsed>2.5){{phase=3;elapsed=0;fireflies.forEach((f,i)=>{{f.tx=htargets[i%htargets.length].x;f.ty=htargets[i%htargets.length].y;}});}}
-  }}
-  if(phase===3){{
-    const prog=Math.min(1,elapsed/2.2);
-    fireflies.forEach(f=>{{
-      f.phase_t+=.04;f.x+=(f.tx-f.x)*prog*.1;f.y+=(f.ty-f.y)*prog*.1;
-      const a=f.glow*(.7+.3*Math.sin(f.phase_t*2));
-      const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.size*5);
-      g.addColorStop(0,`rgba(180,255,100,${{a}})`);g.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=g;ctx.fillRect(f.x-f.size*5,f.y-f.size*5,f.size*10,f.size*10);
-      ctx.beginPath();ctx.arc(f.x,f.y,f.size,0,Math.PI*2);ctx.fillStyle=`rgba(220,255,150,${{a}})`;ctx.fill();
-    }});
-    if(prog>=1&&!cardDone){{cardDone=true;phase=4;setTimeout(showCard,500);}}
-  }}
-  if(phase===4){{
-    fireflies.forEach(f=>{{
-      f.phase_t+=.025;
-      const a=f.glow*(.5+.5*Math.sin(f.phase_t*2));
-      ctx.beginPath();ctx.arc(f.x,f.y,f.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,255,120,${{a}})`;ctx.fill();
-    }});
-  }}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawBg();requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """LIVE TIMER — Today's elapsed time live-ticking; she's been on his mind for most of it."""
+    msg = "Every one of those seconds.\nYou were somewhere in my head\nfor most of them."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'function fmt(n){return String(n).padStart(2,"0");}'
+          'function tick(){'
+          '  const now=new Date(),mn=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();'
+          '  const h=Math.floor(mn/3600),m=Math.floor((mn%3600)/60),s=mn%60;'
+          '  document.getElementById("timer").textContent=fmt(h)+":"+fmt(m)+":"+fmt(s);'
+          '  setTimeout(tick,1000);}'
+          'tick();'
+          'setTimeout(()=>{'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const me=document.getElementById("fm");me.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}me.textContent+=MSG[j++];},52);},'
+          '5200);')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#020810;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Caveat",cursive;overflow:hidden}}'
+            f'.lbl{{font-size:clamp(.85rem,3vw,1.1rem);color:rgba(56,189,248,.45);letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}}'
+            f'#timer{{font-family:"Courier New",monospace;font-size:clamp(3.5rem,16vw,8rem);color:#38bdf8;text-shadow:0 0 60px rgba(56,189,248,.5),0 0 120px rgba(56,189,248,.2);letter-spacing:.04em;line-height:1}}'
+            f'.sub{{font-family:"Caveat",cursive;font-size:clamp(1rem,3.5vw,1.4rem);color:rgba(56,189,248,.38);margin-top:22px;letter-spacing:.08em;text-align:center;padding:0 20px}}'
+            f'.name-tag{{font-family:"Dancing Script",cursive;font-size:clamp(2rem,8vw,3rem);color:#38bdf8;margin-bottom:8px;text-shadow:0 0 40px rgba(56,189,248,.4)}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(2,8,16,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(56,189,248,.15);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(56,189,248,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.1rem,3.5vw,1.4rem);color:#e0f2fe;line-height:1.82;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#38bdf8;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(56,189,248,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<div class="name-tag">{name}</div>'
+            f'<div class="lbl">today has lasted</div>'
+            f'<div id="timer">00:00:00</div>'
+            f'<div class="sub">you\'ve been on my mind\nfor most of it.</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 5. NEON — Retro CRT terminal: SEARCHING... FOUND: → glitches to neon name
-# ══════════════════════════════════════════════════════════════════════════════
 def html_neon(name, date_str):
-    msg = "You showed up in my life\nand now everything else\nis a lot less interesting."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#08000f}}
-{start_css('#ff2d78','255,45,120')}
-{card_css('rgba(12,0,20,.97)','#ffe0f0','#ff2d78','255,45,120')}
-#terminal{{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s ease;pointer-events:none}}
-#terminal.show{{opacity:1}}
-.crt{{width:min(480px,92vw);background:#000;border:2px solid rgba(0,255,80,.4);border-radius:8px;padding:28px 24px;font-family:'Courier New',monospace;font-size:clamp(.8rem,2.5vw,1rem);color:#00ff51;box-shadow:0 0 30px rgba(0,255,80,.2),inset 0 0 30px rgba(0,0,0,.5);position:relative;overflow:hidden}}
-.crt::before{{content:'';position:absolute;inset:0;background:repeating-linear-height(transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);pointer-events:none}}
-.crt-line{{margin-bottom:4px;opacity:0;animation:crtIn .1s ease forwards}}
-@keyframes crtIn{{to{{opacity:1}}}}
-.cursor{{display:inline-block;width:10px;height:1.1em;background:#00ff51;animation:blink .7s step-end infinite;vertical-align:text-bottom;margin-left:2px}}
-@keyframes blink{{50%{{opacity:0}}}}
-.found{{color:#ff2d78;text-shadow:0 0 10px rgba(255,45,120,.8)}}
-#neon-reveal{{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;opacity:0;transition:opacity 1.2s ease;pointer-events:none}}
-#neon-reveal.show{{opacity:1}}
-.neon-name{{font-family:'Dancing Script',cursive;font-size:clamp(4rem,16vw,9rem);color:#ff2d78;text-shadow:0 0 20px #ff2d78,0 0 50px rgba(255,45,120,.6),0 0 100px rgba(255,45,120,.3);animation:neonFlicker 3s ease-in-out infinite}}
-@keyframes neonFlicker{{0%,100%{{opacity:1}}92%{{opacity:1}}93%{{opacity:.6}}94%{{opacity:1}}97%{{opacity:.85}}98%{{opacity:1}}}}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#ff2d78','255,45,120')}
-<div id="terminal"><div class="crt" id="crt"></div></div>
-<div id="neon-reveal"><div class="neon-name">{name}</div></div>
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-function drawBg(){{ctx.fillStyle='#08000f';ctx.fillRect(0,0,W,H);const g=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.5);g.addColorStop(0,'rgba(255,0,80,.04)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}}
-function loop(){{ctx.clearRect(0,0,W,H);drawBg();requestAnimationFrame(loop);}}loop();
-const LINES=[
-  '> BOOTING SYSTEM...',
-  '> INITIALIZING SEARCH PROTOCOL',
-  '> SCANNING DATABASE...',
-  '> RESULTS: 7,900,000,000 people',
-  '> APPLYING FILTERS...',
-  '  [criteria: makes everything better]',
-  '  [criteria: impossible not to think about]',
-  '  [criteria: one of a kind]',
-  '> SEARCHING...',
-  '> NARROWING... ████████░░ 82%',
-  '> NARROWING... █████████░ 94%',
-  '> NARROWING... ██████████ 100%',
-  '',
-  '> MATCH FOUND: 1',
-  `> NAME: <span class="found">{name.upper()}</span>`,
-  '> CONFIDENCE: 100.00%',
-  '> STATUS: Irreplaceable',
-  '',
-  '> OPENING TRANSMISSION...',
-];
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  const term=document.getElementById('terminal');
-  const crt=document.getElementById('crt');
-  setTimeout(()=>{{term.classList.add('show');}},1400);
-  let delay=1600;
-  LINES.forEach((line,i)=>{{
-    setTimeout(()=>{{
-      const div=document.createElement('div');div.className='crt-line';
-      div.innerHTML=line+'<span class="cursor"></span>';
-      crt.appendChild(div);
-      // Remove cursor from previous line
-      if(crt.children.length>1){{const prev=crt.children[crt.children.length-2];const cur=prev.querySelector('.cursor');if(cur)cur.remove();}}
-      crt.scrollTop=crt.scrollHeight;
-    }},delay);
-    delay+=line.includes('SCANNING')||line.includes('NARROWING')||line.includes('RESULTS')?400:180;
-  }});
-  // Glitch transition to neon
-  setTimeout(()=>{{
-    let flicker=0;const fi=setInterval(()=>{{
-      term.style.opacity=flicker%2===0?'0':'1';flicker++;
-      if(flicker>8){{clearInterval(fi);term.style.opacity='0';document.getElementById('neon-reveal').classList.add('show');
-        setTimeout(showCard,1000);}}
-    }},80);
-  }},delay+400);
-}}
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """GEODE CRACK — Dark stone; tap 3× to crack it open; glowing crystals + message inside."""
+    msg = "Most things that look plain on the outside\nare worth cracking open.\n\nYou taught me that."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.44;const R=Math.min(W,H)*.28;'
+          'let stage=0,glowT=0,animating=false;'
+          'const CRACKS=[['
+          '  [{x:.0,y:-.3},{x:-.25,y:-.1},{x:-.4,y:.2}],'
+          '  [{x:.1,y:-.35},{x:.3,y:0},{x:.45,y:.15}],'
+          '  [{x:-.1,y:.38},{x:.1,y:.25},{x:.3,y:.42}]'
+          '],['
+          '  [{x:-.2,y:-.4},{x:-.45,y:-.2},{x:-.5,y:.1}],'
+          '  [{x:.2,y:-.38},{x:.48,y:-.1},{x:.52,y:.22}],'
+          '  [{x:-.35,y:.3},{x:0,y:.48},{x:.38,y:.35}],'
+          '  [{x:-.15,y:-.05},{x:.05,y:.2}]'
+          '],['
+          '  [{x:0,y:-.5},{x:-.3,y:-.4},{x:-.55,y:0},{x:-.5,y:.3}],'
+          '  [{x:.05,y:-.48},{x:.38,y:-.3},{x:.55,y:.05},{x:.48,y:.35}],'
+          '  [{x:-.48,y:.2},{x:-.2,y:.52},{x:.15,y:.5},{x:.45,y:.28}]'
+          ']];'
+          'const CRYSTALS=Array.from({length:22},(_,i)=>{'
+          '  const a=(i/22)*Math.PI*2,r=R*(0.3+Math.random()*.55);'
+          '  return{x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r,h:8+Math.random()*22,hue:180+Math.random()*80,a:0};});'
+          'function drawStone(stage){'
+          '  const gr=ctx.createRadialGradient(CX-R*.15,CY-R*.2,0,CX,CY,R);'
+          '  if(stage<2){gr.addColorStop(0,"#3a3540");gr.addColorStop(1,"#1a1520");}'
+          '  else{gr.addColorStop(0,"#4a3560");gr.addColorStop(.5,"#2a1a40");gr.addColorStop(1,"#180d28");}'
+          '  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();'
+          '  ctx.strokeStyle="rgba(255,255,255,.08)";ctx.lineWidth=2;ctx.stroke();}'
+          'function drawCracks(upTo){'
+          '  for(let s=0;s<upTo&&s<CRACKS.length;s++){'
+          '    CRACKS[s].forEach(crack=>{'
+          '      if(crack.length<2)return;'
+          '      ctx.beginPath();ctx.moveTo(CX+crack[0].x*R,CY+crack[0].y*R);'
+          '      for(let i=1;i<crack.length;i++)ctx.lineTo(CX+crack[i].x*R,CY+crack[i].y*R);'
+          '      ctx.strokeStyle=`rgba(${s===upTo-1?"180,140,255":"120,80,200"},${s===upTo-1?.9:.6})`;'
+          '      ctx.lineWidth=s===upTo-1?2.5:1.5;ctx.stroke();});}}'
+          'function drawCrystals(alpha){'
+          '  CRYSTALS.forEach(c=>{'
+          '    c.a=Math.min(1,c.a+.02);'
+          '    const ga=c.a*alpha;if(ga<=0)return;'
+          '    ctx.save();ctx.globalAlpha=ga;'
+          '    ctx.translate(c.x,c.y);ctx.rotate(Math.PI*.15);'
+          '    ctx.beginPath();ctx.moveTo(0,-c.h*.6);ctx.lineTo(c.h*.22,0);ctx.lineTo(0,c.h*.4);ctx.lineTo(-c.h*.22,0);ctx.closePath();'
+          '    const cg=ctx.createLinearGradient(0,-c.h*.6,0,c.h*.4);'
+          '    cg.addColorStop(0,`hsla(${c.hue},90%,85%,${ga})`);cg.addColorStop(1,`hsla(${c.hue},80%,55%,${ga*.6})`);'
+          '    ctx.fillStyle=cg;ctx.shadowColor=`hsl(${c.hue},90%,75%)`;ctx.shadowBlur=12;ctx.fill();'
+          '    ctx.restore();});}'
+          'function drawGlow(alpha){'
+          '  const gr=ctx.createRadialGradient(CX,CY,0,CX,CY,R*.8);'
+          '  gr.addColorStop(0,`rgba(180,100,255,${alpha*.35})`);'
+          '  gr.addColorStop(1,"rgba(0,0,0,0)");'
+          '  ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);}'
+          'function drawHint(){'
+          '  ctx.fillStyle="rgba(255,255,255,.35)";ctx.font=\'16px "Caveat",cursive\';ctx.textAlign="center";'
+          '  ctx.fillText(`tap to crack (${stage}/3)`,CX,H*.82);}'
+          'function render(){'
+          '  ctx.fillStyle="#0d0a14";ctx.fillRect(0,0,W,H);'
+          '  if(stage<3){'
+          '    drawStone(stage);drawCracks(stage);'
+          '    if(stage<3)drawHint();}'
+          '  else{'
+          '    glowT=Math.min(1,glowT+.015);'
+          '    drawGlow(glowT);drawStone(3);drawCracks(3);drawCrystals(glowT);'
+          '    if(glowT>=1&&!document.getElementById("fin").classList.contains("show")){showFin();}}'
+          '  requestAnimationFrame(render);}'
+          'cv.addEventListener("click",()=>{'
+          '  if(stage>=3)return;stage++;'
+          '  if(stage===3){document.getElementById("tap-hint").style.display="none";}});'
+          'cv.addEventListener("touchend",e=>{e.preventDefault();cv.dispatchEvent(new Event("click"));},{passive:false});'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},50);}'
+          'render();'
+          'window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#0d0a14;overflow:hidden}}'
+            f'#tap-hint{{position:fixed;top:24px;left:50%;transform:translateX(-50%);font-family:"Caveat",cursive;font-size:.9rem;color:rgba(180,140,255,.4);letter-spacing:.14em;animation:bl 2.5s infinite}}'
+            f'@keyframes bl{{0%,100%{{opacity:.3}}50%{{opacity:.8}}}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(13,10,20,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(180,100,255,.2);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(180,100,255,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#e9d5ff;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#c084fc;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(180,100,255,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="tap-hint">tap to crack open</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 6. AURORA — Ribbons dance, pool, write glowing message in the sky
-# ══════════════════════════════════════════════════════════════════════════════
 def html_aurora(name, date_str):
-    msg = "Some things are only visible\nif you look at exactly the right moment.\n\nGlad you looked."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#000c10}}
-{start_css('#00ffcc','0,255,204')}
-{card_css('rgba(0,12,16,.97)','#c0fff4','#00ffcc','0,200,160')}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#00ffcc','0,255,204')}
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-let phase=0,elapsed=0,prevT=0,cardDone=false;
-const STARS=Array.from({{length:200}},()=>({{'x':Math.random(),'y':Math.random()*.6,'r':.2+Math.random()*1,'a':.1+Math.random()*.4,'tp':Math.random()*Math.PI*2,'ts':.005+Math.random()*.01}}));
-// Aurora bands
-const BANDS=[
-  {{color:'rgba(0,255,180,',y:.18,amp:60,spd:.006,phase:0,width:120}},
-  {{color:'rgba(100,100,255,',y:.26,amp:50,spd:.004,phase:1.2,width:90}},
-  {{color:'rgba(0,200,255,',y:.32,amp:70,spd:.008,phase:2.4,width:100}},
-  {{color:'rgba(150,0,255,',y:.22,amp:45,spd:.005,phase:.8,width:80}},
-  {{color:'rgba(0,255,140,',y:.38,amp:55,spd:.007,phase:3.1,width:70}},
-];
-let t=0;
-// Name text reveal phase
-let nameAlpha=0;
-function drawBg(){{
-  ctx.fillStyle='#000c10';ctx.fillRect(0,0,W,H);
-  STARS.forEach(s=>{{s.tp+=s.ts;ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(180,255,240,${{Math.max(0,s.a+Math.sin(s.tp)*.15)}})`;ctx.fill()}});
-}}
-function drawAurora(intensity){{
-  t+=.012;
-  BANDS.forEach(b=>{{
-    b.phase+=b.spd;
-    for(let x=0;x<=W;x+=2){{
-      const y1=(b.y*H)+Math.sin(x*.004+b.phase)*b.amp;
-      const y2=y1+b.width*intensity;
-      const grad=ctx.createLinearGradient(0,y1,0,y2);
-      grad.addColorStop(0,b.color+'0)');
-      grad.addColorStop(.3,b.color+(.12*intensity)+')');
-      grad.addColorStop(.7,b.color+(.08*intensity)+')');
-      grad.addColorStop(1,b.color+'0)');
-      ctx.fillStyle=grad;ctx.fillRect(x,y1,2,y2-y1);
-    }}
-  }});
-}}
-function drawNameInAurora(alpha){{
-  if(alpha<=0)return;
-  ctx.save();
-  ctx.globalAlpha=alpha;
-  ctx.font=`bold clamp(2rem,10vw,5rem) 'Dancing Script',cursive`;
-  ctx.textAlign='center';
-  ctx.textBaseline='middle';
-  const gradient=ctx.createLinearGradient(W/2-100,0,W/2+100,0);
-  gradient.addColorStop(0,'#00ffcc');gradient.addColorStop(.5,'#7b2fff');gradient.addColorStop(1,'#00ffcc');
-  ctx.fillStyle=gradient;
-  ctx.shadowColor='#00ffcc';ctx.shadowBlur=30*alpha;
-  ctx.fillText('{name}',W/2,H*.32);
-  ctx.restore();
-}}
-function begin(){{document.getElementById('start').classList.add('gone');setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  drawBg();
-  if(phase===1){{
-    drawAurora(Math.min(1,elapsed/2));
-    if(elapsed>3){{phase=2;elapsed=0;}}
-  }}
-  if(phase===2){{
-    drawAurora(1);
-    nameAlpha=Math.min(1,elapsed/.8);
-    drawNameInAurora(nameAlpha);
-    if(elapsed>1.5&&!cardDone){{cardDone=true;setTimeout(showCard,600);}}
-  }}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawBg();requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """CSS 3D HEARTS — Multiple hearts floating at different depths; mouse/touch tilts the scene."""
+    msg = "There are too many reasons\nto count anymore.\n\nSo I stopped counting."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    heart_data = json.dumps([
+        {"z": -300, "x": -35, "y": -20, "s": 1.8, "h": 340, "sp": 8},
+        {"z": -180, "x": 40,  "y": -40, "s": 1.2, "h": 355, "sp": 11},
+        {"z": -80,  "x": -55, "y": 30,  "s": 1.0, "h": 325, "sp": 7},
+        {"z": 0,    "x": 10,  "y": -10, "s": 2.4, "h": 345, "sp": 6},
+        {"z": 80,   "x": -30, "y": 50,  "s": 0.9, "h": 335, "sp": 13},
+        {"z": 160,  "x": 60,  "y": 20,  "s": 1.5, "h": 350, "sp": 9},
+        {"z": 250,  "x": -10, "y": -55, "s": 1.1, "h": 320, "sp": 10},
+        {"z": -220, "x": 55,  "y": 45,  "s": 0.8, "h": 360, "sp": 14},
+        {"z": 120,  "x": -60, "y": -30, "s": 1.3, "h": 330, "sp": 8},
+    ])
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          f'const HD={heart_data};'
+          'const scene=document.getElementById("scene");'
+          'const hearts=HD.map((d,i)=>{'
+          '  const el=document.createElement("div");el.className="heart";'
+          '  el.innerHTML=`<div class="hh"></div>`;'
+          '  el.style.cssText=`transform:translateZ(${d.z}px) translateX(${d.x}px) translateY(${d.y}px);`+'
+          '    `animation:float${i%3} ${d.sp}s ease-in-out infinite;filter:hue-rotate(${d.h-340}deg);font-size:${d.s*2.5}rem;`;'
+          '  scene.appendChild(el);return el;});'
+          'let tx=0,ty=0,cx=0,cy=0;'
+          'document.addEventListener("mousemove",e=>{tx=(e.clientX/window.innerWidth-.5)*25;ty=(e.clientY/window.innerHeight-.5)*-18;});'
+          'document.addEventListener("touchmove",e=>{e.preventDefault();tx=(e.touches[0].clientX/window.innerWidth-.5)*25;ty=(e.touches[0].clientY/window.innerHeight-.5)*-18;},{passive:false});'
+          'function tilt(){'
+          '  cx+=(tx-cx)*.06;cy+=(ty-cy)*.06;'
+          '  scene.style.transform=`rotateX(${cy}deg) rotateY(${cx}deg)`;'
+          '  requestAnimationFrame(tilt);}'
+          'tilt();'
+          'setTimeout(()=>{'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},50);},'
+          '4500);')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#0a0010;overflow:hidden;display:flex;align-items:center;justify-content:center}}'
+            f'#wrap{{width:100%;height:100%;perspective:600px;display:flex;align-items:center;justify-content:center}}'
+            f'#scene{{transform-style:preserve-3d;width:200px;height:200px;position:relative;transition:transform .1s}}'
+            f'.heart{{position:absolute;top:50%;left:50%;transform-origin:center;color:rgba(255,80,150,1);text-shadow:0 0 20px rgba(255,80,150,.7),0 0 60px rgba(255,80,150,.3);line-height:1}}'
+            f'.hh::before{{content:"♥";font-size:1em}}'
+            f'@keyframes float0{{0%,100%{{transform:translateY(0px)}}50%{{transform:translateY(-18px)}}}}'
+            f'@keyframes float1{{0%,100%{{transform:translateY(-10px)}}50%{{transform:translateY(12px)}}}}'
+            f'@keyframes float2{{0%,100%{{transform:translateY(8px)}}50%{{transform:translateY(-14px)}}}}'
+            f'.name{{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:"Dancing Script",cursive;font-size:clamp(2rem,10vw,4rem);color:rgba(255,100,160,.15);letter-spacing:.2em;pointer-events:none;white-space:nowrap}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(10,0,16,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(255,80,150,.15);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(255,100,160,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#ffe4ef;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#ff6096;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(255,100,160,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<div id="wrap"><div id="scene"></div></div>'
+            f'<div class="name">{name}</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 7. SUNRISE — Full sky transformation dark→dawn→gold, message lit by sunrise
-# ══════════════════════════════════════════════════════════════════════════════
 def html_sunrise(name, date_str):
-    msg = "Every day you're in it\nstarts better than the last.\n\nThat's all this is about."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#05020a}}
-{start_css('#ffb347','255,180,60')}
-{card_css('rgba(255,250,240,.97)','#2a1000','#e65100','255,140,40')}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#ffb347','255,180,60')}
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-let phase=0,sunProgress=0,prevT=0,elapsed=0,cardDone=false;
-// Sky color stops at different sun positions (0=night, 1=full sunrise)
-function skyColor(t){{
-  const night={{top:[5,2,10],bot:[10,5,20]}};
-  const dawn={{top:[30,15,60],bot:[180,60,20]}};
-  const gold={{top:[80,120,200],bot:[255,160,40]}};
-  function lerp(a,b,t){{return Math.round(a+(b-a)*t);}}
-  function lerpCol(a,b,t){{return[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];}}
-  const topC=t<.5?lerpCol(night.top,dawn.top,t*2):lerpCol(dawn.top,gold.top,(t-.5)*2);
-  const botC=t<.5?lerpCol(night.bot,dawn.bot,t*2):lerpCol(dawn.bot,gold.bot,(t-.5)*2);
-  return{{top:`rgb(${{topC.join(',')}})`,bot:`rgb(${{botC.join(',')}})`,botArr:botC}};
-}}
-const STARS=Array.from({{length:160}},()=>({{'x':Math.random(),'y':Math.random()*.7,'r':.3+Math.random(),'a':.6+Math.random()*.4,'tp':Math.random()*Math.PI*2}}));
-function drawScene(t){{
-  const c=skyColor(t);
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,c.top);bg.addColorStop(1,c.bot);
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // Stars fade as sun rises
-  const starAlpha=Math.max(0,1-t*2.5);
-  STARS.forEach(s=>{{s.tp+=.005;const a=starAlpha*(s.a+Math.sin(s.tp)*.15);if(a<=0)return;ctx.beginPath();ctx.arc(s.x*W,s.y*H*.8,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,240,220,${{a}})`;ctx.fill()}});
-  // Sun
-  const sunY=H*.85-t*H*.55;
-  const sunR=Math.min(W,H)*.055;
-  if(t>.05){{
-    const sunGlow=ctx.createRadialGradient(W/2,sunY,0,W/2,sunY,sunR*8);
-    sunGlow.addColorStop(0,`rgba(255,200,80,${{t*.3}})`);
-    sunGlow.addColorStop(.4,`rgba(255,140,40,${{t*.15}})`);
-    sunGlow.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=sunGlow;ctx.fillRect(0,0,W,H);
-    ctx.beginPath();ctx.arc(W/2,sunY,sunR*t,0,Math.PI*2);
-    const sg=ctx.createRadialGradient(W/2,sunY,0,W/2,sunY,sunR);
-    sg.addColorStop(0,'#fff8c0');sg.addColorStop(.5,'#ffcc40');sg.addColorStop(1,'rgba(255,120,20,.8)');
-    ctx.fillStyle=sg;ctx.fill();
-  }}
-  // Horizon glow
-  const hg=ctx.createLinearGradient(0,H*.6,0,H);
-  hg.addColorStop(0,'rgba(0,0,0,0)');
-  hg.addColorStop(1,`rgba(${{c.botArr.join(',')}},0.4)`);
-  ctx.fillStyle=hg;ctx.fillRect(0,H*.6,W,H*.4);
-  // Ground silhouette
-  ctx.fillStyle=`rgba(5,3,2,${{.9+t*.1}})`;
-  ctx.fillRect(0,H*.85,W,H*.15);
-  // Hills
-  ctx.beginPath();ctx.moveTo(0,H*.85);
-  for(let x=0;x<=W;x+=20)ctx.lineTo(x,H*.82+Math.sin(x*.008)*H*.04);
-  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
-  ctx.fillStyle=`rgba(3,2,1,${{.95}})`;ctx.fill();
-}}
-function begin(){{document.getElementById('start').classList.add('gone');setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  if(phase===1){{
-    sunProgress=Math.min(1,elapsed/5);
-    drawScene(sunProgress);
-    if(sunProgress>.7&&!cardDone){{cardDone=true;setTimeout(showCard,400);}}
-    if(sunProgress>=1)phase=2;
-  }}
-  if(phase===2)drawScene(1);
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawScene(0);requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """CANVAS PEN HANDWRITING — Ink pen draws message in cursive on canvas."""
+    msg = "Wrote it by hand\nbecause typing felt too easy."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const lines=["for "+NAME+",","","I like you.","A lot, actually.","","More than I let on.","","— Dipesh"];'
+          'const lh=Math.min(H*.1,52),startY=H*.2;'
+          'ctx.fillStyle="#fdf8f2";ctx.fillRect(0,0,W,H);'
+          'for(let i=0;i<H;i+=22){ctx.strokeStyle=`rgba(180,160,140,${i%88===0?.18:.07})`;ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i);ctx.stroke();}'
+          'let li=0,charI=0,x=W*.08,y=startY,inkTrail=[];'
+          'function drawInk(){'
+          '  if(li>=lines.length){setTimeout(showFin,800);return;}'
+          '  const line=lines[li];'
+          '  if(charI>=line.length){li++;charI=0;x=W*.08;y+=lh;if(li<lines.length)setTimeout(drawInk,320);else setTimeout(drawInk,320);return;}'
+          '  const c=line[charI];charI++;'
+          '  const fs=li===0?Math.min(W*.052,28):li===7?Math.min(W*.06,32):Math.min(W*.065,36);'
+          '  ctx.font=`italic ${fs}px "Dancing Script",cursive`;'
+          '  ctx.fillStyle=li===7?"#c84060":"#1a1008";'
+          '  ctx.globalAlpha=li===7?.8:1;'
+          '  ctx.fillText(c,x,y);'
+          '  x+=ctx.measureText(c).width;'
+          '  ctx.globalAlpha=1;'
+          '  // Ink blot effect'
+          '  if(Math.random()<.07){'
+          '    ctx.beginPath();ctx.arc(x-2,y+1,1+Math.random()*2,0,Math.PI*2);'
+          '    ctx.fillStyle="rgba(26,16,8,.25)";ctx.fill();}'
+          '  setTimeout(drawInk,55+Math.random()*40+(c===" "?80:0));}'
+          'drawInk();'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},60);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#fdf8f2;overflow:hidden}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(253,248,242,.98);border-radius:3px;padding:24px 26px 20px;border:1px solid rgba(180,140,100,.3);box-shadow:0 8px 40px rgba(0,0,0,.15);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(140,100,60,.45);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Dancing Script",cursive;font-size:clamp(1.1rem,3.5vw,1.4rem);color:#3a1a08;line-height:1.85;white-space:pre-wrap;font-style:italic}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#c84060;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(140,100,60,.3);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 8. RAIN — Foggy glass: rain streaks → finger draws heart → message in fog
-# ══════════════════════════════════════════════════════════════════════════════
 def html_rain(name, date_str):
-    msg = "You're the kind of person\nI want to be around\nwhen it rains.\n\nAnd every other time."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#060810}}
-{start_css('#7eb8e8','126,184,232')}
-{card_css('rgba(8,10,20,.97)','#d0e4f8','#7eb8e8','100,160,220')}
-</style></head><body>
-<canvas id="bg"></canvas>
-<canvas id="fg"></canvas>
-{start_html(name,'#7eb8e8','126,184,232')}
-{card_html(name, date_str)}
-<script>
-const bg=document.getElementById('bg'),bgx=bg.getContext('2d');
-const fg=document.getElementById('fg'),fgx=fg.getContext('2d');
-let W=bg.width=fg.width=window.innerWidth,H=bg.height=fg.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-let phase=0,elapsed=0,prevT=0,cardDone=false;
-// Rain streaks
-const DROPS=Array.from({{length:120}},()=>({{'x':Math.random()*W,'y':Math.random()*H,'len':20+Math.random()*60,'spd':8+Math.random()*10,'a':.1+Math.random()*.35}}));
-function drawRain(){{
-  bgx.fillStyle='rgba(6,8,16,.85)';bgx.fillRect(0,0,W,H);
-  bgx.strokeStyle='rgba(140,180,220,.25)';bgx.lineWidth=1;
-  DROPS.forEach(d=>{{
-    bgx.beginPath();bgx.moveTo(d.x,d.y);bgx.lineTo(d.x-1,d.y+d.len);bgx.globalAlpha=d.a;bgx.stroke();
-    d.y+=d.spd;if(d.y>H+80){{d.y=-80;d.x=Math.random()*W;}}
-  }});
-  bgx.globalAlpha=1;
-  // Foggy glass overlay
-  const fog=bgx.createLinearGradient(0,0,0,H);
-  fog.addColorStop(0,'rgba(100,120,160,.15)');fog.addColorStop(1,'rgba(80,100,140,.08)');
-  bgx.fillStyle=fog;bgx.fillRect(0,0,W,H);
-}}
-// Heart drawing on fog
-let heartDrawn=[];let heartProgress=0;
-function heartPts(n,cx,cy,sc){{const pts=[];for(let i=0;i<n;i++){{const t=(i/n)*Math.PI*2,x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));pts.push({{x:cx+x*sc,y:cy+y*sc}});}}return pts;}}
-const HX=W/2,HY=H*.38,HS=Math.min(W*.028,H*.024);
-const HPTS=heartPts(60,HX,HY,HS);
-// Message in fog (drawn as text with foggy style)
-let msgFogAlpha=0;
-function drawFogHeart(prog){{
-  fgx.clearRect(0,0,W,H);
-  const drawn=Math.floor(HPTS.length*prog);
-  if(drawn<2)return;
-  // Clear the fog along the heart path (finger drawing effect)
-  fgx.save();
-  fgx.globalCompositeOperation='destination-out';
-  fgx.strokeStyle='rgba(255,255,255,.6)';fgx.lineWidth=18;fgx.lineCap='round';fgx.lineJoin='round';
-  fgx.beginPath();fgx.moveTo(HPTS[0].x,HPTS[0].y);
-  for(let i=1;i<drawn;i++)fgx.lineTo(HPTS[i].x,HPTS[i].y);
-  fgx.stroke();fgx.restore();
-  // Draw the cleared path as a glowing wet trail
-  fgx.save();fgx.strokeStyle='rgba(160,200,240,.5)';fgx.lineWidth=4;fgx.lineCap='round';fgx.lineJoin='round';
-  fgx.beginPath();fgx.moveTo(HPTS[0].x,HPTS[0].y);
-  for(let i=1;i<drawn;i++)fgx.lineTo(HPTS[i].x,HPTS[i].y);
-  fgx.stroke();fgx.restore();
-}}
-function drawFogLayer(){{
-  // Full fog overlay on fg canvas
-  fgx.globalCompositeOperation='source-over';
-  const fog=fgx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.7);
-  fog.addColorStop(0,'rgba(130,150,180,.55)');fog.addColorStop(1,'rgba(100,120,160,.3)');
-  // Draw fog first, then the heart "clears" it via destination-out above
-}}
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  // Start fog layer on fg
-  fgx.fillStyle='rgba(130,150,180,.5)';fgx.fillRect(0,0,W,H);
-  setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);
-}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  drawRain();
-  if(phase===1){{
-    heartProgress=Math.min(1,elapsed/2.5);
-    drawFogHeart(heartProgress);
-    if(heartProgress>=1&&!cardDone){{cardDone=true;setTimeout(showCard,700);}}
-  }}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawRain();fgx.clearRect(0,0,W,H);fgx.fillStyle='rgba(130,150,180,.5)';fgx.fillRect(0,0,W,H);requestAnimationFrame(idle);}}
-requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=bg.width=fg.width=window.innerWidth;H=bg.height=fg.height=window.innerHeight;}});
-</script></body></html>"""
+    """ORBIT NAME — Particles travel in orbits that collectively trace her name; hypnotic."""
+    msg = "You've been circling in my head like this.\nConstantly.\n\nI'm fine with it."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          # Render name to offscreen canvas, sample points
+          'const OCV=document.createElement("canvas"),OCTX=OCV.getContext("2d");'
+          'OCV.width=W;OCV.height=H;'
+          'const fs=Math.min(W*.15,H*.18,80);'
+          'OCTX.font=`900 ${fs}px "Dancing Script",cursive`;'
+          'OCTX.textAlign="center";OCTX.textBaseline="middle";'
+          'OCTX.fillStyle="#fff";OCTX.fillText(NAME,W/2,H/2);'
+          'const imgd=OCTX.getImageData(0,0,W,H).data;'
+          'const pts=[];'
+          'for(let y=0;y<H;y+=4){for(let x=0;x<W;x+=4){'
+          '  const idx=(y*W+x)*4;'
+          '  if(imgd[idx+3]>80)pts.push({x,y});}}'
+          # Sample ~200 points
+          'const step=Math.max(1,Math.floor(pts.length/200));'
+          'const targets=pts.filter((_,i)=>i%step===0).slice(0,200);'
+          'const particles=targets.map(t=>({'
+          '  tx:t.x,ty:t.y,'
+          '  x:W/2+(Math.random()-.5)*W,'
+          '  y:H/2+(Math.random()-.5)*H,'
+          '  angle:Math.random()*Math.PI*2,'
+          '  radius:20+Math.random()*60,'
+          '  speed:.4+Math.random()*.8,'
+          '  hue:300+Math.random()*80,size:1.5+Math.random()*1.5,alpha:0}));'
+          'let t=0,msgShown=false,converged=false;'
+          'function loop(){'
+          '  t+=.016;'
+          '  ctx.fillStyle="rgba(5,0,16,.15)";ctx.fillRect(0,0,W,H);'
+          '  const conv=t>3;'
+          '  particles.forEach((p,i)=>{'
+          '    p.alpha=Math.min(1,p.alpha+.015);'
+          '    p.angle+=p.speed*.025;'
+          '    if(conv){'
+          '      p.x+=(p.tx-p.x)*.04+Math.cos(p.angle)*0.8;'
+          '      p.y+=(p.ty-p.y)*.04+Math.sin(p.angle)*0.8;}'
+          '    else{'
+          '      p.x+=Math.cos(p.angle)*p.speed;'
+          '      p.y+=Math.sin(p.angle)*p.speed;'
+          '      if(p.x<0||p.x>W)p.x=W/2+(Math.random()-.5)*50;'
+          '      if(p.y<0||p.y>H)p.y=H/2+(Math.random()-.5)*50;}'
+          '    const glow=.5+.5*Math.sin(t*3+i*.2);'
+          '    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);'
+          '    ctx.fillStyle=`hsla(${p.hue},90%,${70+glow*20}%,${p.alpha})`;'
+          '    ctx.shadowColor=`hsl(${p.hue},90%,70%)`;ctx.shadowBlur=6;'
+          '    ctx.fill();ctx.shadowBlur=0;});'
+          '  if(!msgShown&&t>7){msgShown=true;showFin();}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},50);}'
+          'loop();'
+          'window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#050010;overflow:hidden}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(5,0,16,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(200,100,255,.15);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(200,100,255,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#f0d0ff;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#c084fc;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(200,100,255,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 9. PARTICLE — EKG flatline → huge heartbeat → spike morphs into glowing heart
-# ══════════════════════════════════════════════════════════════════════════════
 def html_particle(name, date_str):
-    msg = "Jenisha.\n\nThat's it.\nThat's the whole message."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#0f0005}}
-{start_css('#ff1464','255,20,100')}
-{card_css('rgba(18,0,5,.97)','#ffd0e0','#ff1464','255,20,100')}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#ff1464','255,20,100')}
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-let phase=0,elapsed=0,prevT=0,cardDone=false;
-// EKG line
-let ekg=[];const EKG_LEN=Math.floor(W*.8);const EKG_X=W*.1;const EKG_Y=H*.45;
-let ekgT=0;let beatDone=false;let beatT=-1;
-// Heart morph
-let heartAlpha=0,heartScale=0,heartPulse=0;
-function addEKGPoint(flat){{
-  const v=flat?0:ekgBeat(ekgT);
-  ekg.push(v);if(ekg.length>EKG_LEN)ekg.shift();ekgT+=.25;
-}}
-function ekgBeat(t){{
-  // Realistic QRS complex
-  const mod=t%80;
-  if(mod<30)return 0;
-  if(mod<33)return-(mod-30)*8;   // Q
-  if(mod<36)return 24+(mod-33)*60; // R up
-  if(mod<37)return 204-(mod-36)*180; // spike
-  if(mod<39)return 24-(mod-37)*15; // S
-  if(mod<42)return 0;
-  if(mod<50)return Math.sin((mod-42)/8*Math.PI)*12; // T wave
-  return 0;
-}}
-function drawEKG(alpha,color){{
-  if(ekg.length<2||alpha<=0)return;
-  ctx.save();ctx.globalAlpha=alpha;
-  ctx.strokeStyle=color||'#ff1464';ctx.lineWidth=2;ctx.shadowColor='#ff1464';ctx.shadowBlur=6;
-  ctx.beginPath();
-  ekg.forEach((v,i)=>{{
-    const x=EKG_X+i*(W*.8/EKG_LEN),y=EKG_Y-v;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  }});
-  ctx.stroke();ctx.shadowBlur=0;ctx.restore();
-}}
-function heartPts(n,cx,cy,sc){{const pts=[];for(let i=0;i<n;i++){{const t=(i/n)*Math.PI*2,x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));pts.push({{x:cx+x*sc,y:cy+y*sc}});}}return pts;}}
-function drawHeart(alpha,scale,pulse){{
-  if(alpha<=0)return;
-  const cx=W/2,cy=H*.42,sc=Math.min(W*.024,H*.02)*scale*(1+Math.sin(pulse)*.04);
-  ctx.save();ctx.globalAlpha=alpha;
-  // Glow
-  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,sc*22);
-  g.addColorStop(0,'rgba(255,20,100,.25)');g.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  // Heart stroke
-  const pts=heartPts(80,cx,cy,sc);
-  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.closePath();
-  ctx.strokeStyle='#ff1464';ctx.lineWidth=3;ctx.shadowColor='#ff1464';ctx.shadowBlur=20;ctx.stroke();
-  ctx.shadowBlur=0;ctx.restore();
-}}
-function begin(){{document.getElementById('start').classList.add('gone');setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  ctx.fillStyle='rgba(15,0,5,.92)';ctx.fillRect(0,0,W,H);
-  if(phase===1){{
-    // Flatline for 1.2s then single massive beat
-    if(elapsed<1.2){{addEKGPoint(true);drawEKG(1);}}
-    else if(!beatDone){{
-      // Big beat
-      const bp=Math.min(1,(elapsed-1.2)/.6);
-      ekg=[];for(let i=0;i<EKG_LEN;i++){{const rel=i/EKG_LEN;const v=rel>.3&&rel<.7?Math.sin((rel-.3)/.4*Math.PI)*160*Math.sin(bp*Math.PI):0;ekg.push(v);}}
-      drawEKG(1);
-      if(bp>=1){{beatDone=true;elapsed=1.2;}}
-    }}
-    else{{
-      // Fade EKG, grow heart
-      const fp=Math.min(1,(elapsed-1.2)/1);
-      drawEKG(1-fp);
-      heartAlpha=fp;heartScale=fp;heartPulse+=.04;
-      drawHeart(heartAlpha,heartScale,heartPulse);
-      if(fp>=1&&!cardDone){{cardDone=true;phase=2;setTimeout(showCard,500);}}
-    }}
-  }}
-  if(phase===2){{heartPulse+=.04;drawHeart(1,1,heartPulse);}}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;ctx.fillStyle='#0f0005';ctx.fillRect(0,0,W,H);addEKGPoint(true);drawEKG(.3);requestAnimationFrame(idle);}}
-requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """GIFT BOX UNWRAP — Click ribbon, click lid, box opens, glow + message inside."""
+    msg = "No occasion.\nNo reason.\n\nJust felt like it."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'let stage=0;'
+          'function next(){'
+          '  if(stage===0){stage=1;document.getElementById("ribbon").classList.add("untie");document.getElementById("bow").classList.add("fade");document.getElementById("tap-label").textContent="tap to open";}'
+          '  else if(stage===1){stage=2;document.getElementById("lid").classList.add("open");document.getElementById("tap-label").textContent="";setTimeout(()=>{document.getElementById("glow").classList.add("show");setTimeout(showFin,800);},600);}'
+          '}'
+          'document.getElementById("box").addEventListener("click",next);'
+          'document.getElementById("box").addEventListener("touchend",e=>{e.preventDefault();next();},{passive:false});'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},48);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#1a0810;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}}'
+            f'.name-tag{{font-family:"Dancing Script",cursive;font-size:clamp(1.5rem,6vw,2.2rem);color:rgba(255,120,140,.5);margin-bottom:32px;letter-spacing:.08em}}'
+            f'#box{{position:relative;width:min(220px,55vw);height:min(200px,50vw);cursor:pointer;user-select:none}}'
+            f'.box-body{{position:absolute;bottom:0;left:0;right:0;height:72%;background:linear-gradient(135deg,#c2185b,#880e4f);border-radius:4px;box-shadow:0 12px 40px rgba(0,0,0,.5);overflow:hidden}}'
+            f'.box-body::after{{content:"";position:absolute;left:50%;top:0;bottom:0;width:12px;background:rgba(255,255,255,.15);transform:translateX(-50%)}}'
+            f'.box-lid{{position:absolute;top:0;left:-5%;right:-5%;height:32%;background:linear-gradient(135deg,#e91e63,#ad1457);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.4);transform-origin:center bottom;transition:transform .8s cubic-bezier(.4,0,.2,1)}}'
+            f'.box-lid.open{{transform:rotateX(-115deg)}}'
+            f'#ribbon{{position:absolute;left:50%;top:0;bottom:0;width:14px;background:linear-gradient(180deg,rgba(255,230,240,.9),rgba(255,180,200,.7));transform:translateX(-50%);transition:opacity .5s}}'
+            f'#ribbon.untie{{opacity:0;transform:translateX(-50%) rotate(8deg)}}'
+            f'#bow{{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:2.4rem;transition:opacity .4s,transform .5s}}'
+            f'#bow.fade{{opacity:0;transform:translateX(-50%) translateY(-20px)}}'
+            f'#glow{{position:absolute;top:10%;left:10%;right:10%;bottom:0;background:radial-gradient(ellipse at 50% 20%,rgba(255,200,220,.9),rgba(255,100,160,.4),transparent 70%);opacity:0;transition:opacity 1.2s;pointer-events:none;border-radius:50%}}'
+            f'#glow.show{{opacity:1}}'
+            f'#tap-label{{font-family:"Caveat",cursive;font-size:1rem;color:rgba(255,180,200,.5);letter-spacing:.12em;margin-top:24px;animation:bl 2s infinite}}'
+            f'@keyframes bl{{0%,100%{{opacity:.35}}50%{{opacity:.85}}}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(26,8,16,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(233,30,99,.2);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(233,30,99,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#fce4ec;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#e91e63;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(233,30,99,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<div class="name-tag">for {name.lower()}</div>'
+            f'<div id="box">'
+            f'  <div class="box-lid" id="lid"><div id="ribbon"></div></div>'
+            f'  <div class="box-body"><div id="glow"></div></div>'
+            f'  <div id="bow">🎀</div>'
+            f'</div>'
+            f'<div id="tap-label">tap to unwrap</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 10. MATRIX — Code rain, chars slow + lock into her name, matrix clears
-# ══════════════════════════════════════════════════════════════════════════════
 def html_matrix(name, date_str):
-    msg = "If I could write you a program\nit would just be an infinite loop\nthat prints your name."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#000800}}
-{start_css('#00ff41','0,220,50')}
-{card_css('rgba(0,8,0,.97)','#b0ffb8','#00ff41','0,200,40')}
-#nname{{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font-family:'Dancing Script',cursive;font-size:clamp(3.5rem,14vw,8rem);color:#00ff41;text-shadow:0 0 20px #00ff41,0 0 60px rgba(0,255,65,.4);opacity:0;z-index:20;transition:opacity 1s ease;white-space:nowrap}}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#00ff41','0,220,50')}
-<div id="nname">{name}</div>
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-const CHARS='ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
-const FS=16;const COLS=Math.floor(W/FS);
-const drops=Array.from({{length:COLS}},()=>Math.floor(Math.random()*H/FS));
-const dropSpeeds=Array.from({{length:COLS}},()=>.3+Math.random()*.7);
-let phase=0,elapsed=0,prevT=0,cardDone=false,rainAlpha=1;
-function drawMatrix(){{
-  ctx.fillStyle=`rgba(0,8,0,${{0.05+(.95*(1-rainAlpha))}})`;ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=`rgba(0,255,65,${{rainAlpha}})`;ctx.font=FS+'px monospace';
-  drops.forEach((y,i)=>{{
-    const char=CHARS[Math.floor(Math.random()*CHARS.length)];
-    ctx.fillStyle=y*FS<20?`rgba(180,255,180,${{rainAlpha}})`:`rgba(0,200,40,${{rainAlpha*.7}})`;
-    ctx.fillText(char,i*FS,y*FS);
-    drops[i]+=dropSpeeds[i];
-    if(drops[i]*FS>H&&Math.random()>.975)drops[i]=0;
-  }});
-}}
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  setTimeout(()=>{{phase=1;prevT=performance.now();requestAnimationFrame(loop);}},1400);
-}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  if(phase===1){{drawMatrix();if(elapsed>2.5){{phase=2;elapsed=0;}}}}
-  if(phase===2){{
-    // Fade out matrix, show name
-    rainAlpha=Math.max(0,1-elapsed/1.2);
-    drawMatrix();
-    if(elapsed>.4)document.getElementById('nname').style.opacity=Math.min(1,(elapsed-.4)/.8);
-    if(elapsed>1.5&&!cardDone){{cardDone=true;setTimeout(showCard,600);}}
-  }}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawMatrix();requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """MOOD ORB — Glowing orb; hover/touch different zones shows feelings; click = message."""
+    msg = "It's all of this at once.\nEvery time."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    moods = json.dumps([
+        {"a": 0,    "l": "chaos"},
+        {"a": 72,   "l": "warmth"},
+        {"a": 144,  "l": "home"},
+        {"a": 216,  "l": "distraction"},
+        {"a": 288,  "l": "something good"},
+    ])
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          f'const MOODS={moods};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.44,R=Math.min(W,H)*.28;'
+          'let hovered="",hue=330,pulsT=0,clicked=false;'
+          'function getZone(x,y){'
+          '  const dx=x-CX,dy=y-CY;'
+          '  if(Math.sqrt(dx*dx+dy*dy)>R)return "";'
+          '  const ang=(Math.atan2(dy,dx)*180/Math.PI+360)%360;'
+          '  return MOODS.find((_,i)=>{'
+          '    const next=MOODS[(i+1)%MOODS.length];'
+          '    const a=MOODS[i].a,b=i===MOODS.length-1?360:next.a;'
+          '    return ang>=a&&ang<b;}).l;}'
+          'cv.addEventListener("mousemove",e=>{hovered=getZone(e.clientX,e.clientY);});'
+          'cv.addEventListener("touchmove",e=>{e.preventDefault();hovered=getZone(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});'
+          'cv.addEventListener("click",e=>{if(getZone(e.clientX,e.clientY)){clicked=true;setTimeout(showFin,600);}});'
+          'cv.addEventListener("touchend",e=>{e.preventDefault();if(hovered)clicked=true;setTimeout(showFin,600);});'
+          'function loop(){'
+          '  pulsT+=.02;'
+          '  ctx.fillStyle="#08000f";ctx.fillRect(0,0,W,H);'
+          '  const pulse=.5+.5*Math.sin(pulsT);'
+          '  // Outer glow'
+          '  const og=ctx.createRadialGradient(CX,CY,R*.5,CX,CY,R*1.8);'
+          '  og.addColorStop(0,`rgba(180,50,255,${(.12+pulse*.08)*1})`);og.addColorStop(1,"rgba(0,0,0,0)");'
+          '  ctx.fillStyle=og;ctx.fillRect(0,0,W,H);'
+          '  // Orb body'
+          '  const gr=ctx.createRadialGradient(CX-R*.2,CY-R*.25,0,CX,CY,R);'
+          '  gr.addColorStop(0,`hsl(${290+pulse*20},70%,55%)`);'
+          '  gr.addColorStop(.5,`hsl(${270+pulse*15},80%,35%)`);'
+          '  gr.addColorStop(1,`hsl(${250},90%,15%)`);'
+          '  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();'
+          '  // Zone dividers (subtle)'
+          '  MOODS.forEach(m=>{const a=m.a*Math.PI/180;ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(CX+Math.cos(a)*R,CY+Math.sin(a)*R);ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;ctx.stroke();});'
+          '  // Hover highlight'
+          '  if(hovered){'
+          '    const mi=MOODS.findIndex(m=>m.l===hovered);'
+          '    const a1=MOODS[mi].a*Math.PI/180;'
+          '    const a2=(mi===MOODS.length-1?360:MOODS[mi+1].a)*Math.PI/180;'
+          '    ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,a1,a2);ctx.closePath();'
+          '    ctx.fillStyle="rgba(255,255,255,.07)";ctx.fill();}'
+          '  // Mood label'
+          '  if(hovered){'
+          '    ctx.save();ctx.font=`bold ${Math.min(W*.07,28)}px "Dancing Script",cursive`;'
+          '    ctx.textAlign="center";ctx.textBaseline="middle";'
+          '    ctx.fillStyle=`rgba(255,220,255,${.7+pulse*.3})`;'
+          '    ctx.shadowColor="rgba(200,100,255,.8)";ctx.shadowBlur=20;'
+          '    ctx.fillText(hovered,CX,CY);ctx.restore();}'
+          '  else{'
+          '    ctx.font=`${Math.min(W*.04,16)}px "Caveat",cursive`;'
+          '    ctx.textAlign="center";ctx.textBaseline="middle";'
+          '    ctx.fillStyle=`rgba(255,200,255,${.3+pulse*.2})`;'
+          '    ctx.fillText("hover me",CX,CY);}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},56);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#08000f;overflow:hidden}}'
+            f'.nametag{{position:fixed;top:24px;left:50%;transform:translateX(-50%);font-family:"Dancing Script",cursive;font-size:clamp(1.4rem,5vw,2rem);color:rgba(200,100,255,.4);letter-spacing:.08em}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(8,0,15,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(180,50,255,.2);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(180,50,255,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#f0d0ff;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#c084fc;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(180,50,255,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div class="nametag">{name}</div>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 11. BUTTERFLY — Chrysalis shakes, butterfly emerges, wings open, form heart
-# ══════════════════════════════════════════════════════════════════════════════
 def html_butterfly(name, date_str):
-    msg = "Opening this probably surprised you.\nGood.\nYou deserve nice surprises."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#080818}}
-{start_css('#f9a8d4','249,168,212')}
-{card_css('rgba(8,8,24,.97)','#f0d8ff','#c084fc','220,150,255')}
-#scene{{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;pointer-events:none}}
-.cocoon{{font-size:clamp(4rem,12vw,7rem);transition:transform .2s ease;display:inline-block}}
-.cocoon.shake{{animation:shake .5s ease-in-out 3}}
-@keyframes shake{{0%,100%{{transform:rotate(-5deg)}}50%{{transform:rotate(5deg)}}}}
-.butterfly{{font-size:clamp(5rem,15vw,9rem);display:none;animation:spread 1s ease forwards}}
-@keyframes spread{{from{{transform:scaleX(.1)}}to{{transform:scaleX(1)}}}}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#f9a8d4','249,168,212')}
-<div id="scene"><span class="cocoon" id="cocoon">🫘</span></div>
-{card_html(name, date_str)}
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;{TYPEWRITER_JS}
-const STARS=Array.from({{length:200}},()=>({{'x':Math.random(),'y':Math.random(),'r':.3+Math.random()*1.3,'a':.1+Math.random()*.5,'tp':Math.random()*Math.PI*2,'ts':.006+Math.random()*.012}}));
-let phase=0,elapsed=0,prevT=0,cardDone=false;
-// Particle butterflies
-let particles=[];
-function spawnParticles(){{
-  const cols=['#f9a8d4','#e879f9','#c084fc','#fbbf24','#a78bfa'];
-  for(let i=0;i<40;i++){{
-    particles.push({{
-      x:W/2,y:H/2,vx:(Math.random()-.5)*6,vy:(Math.random()-.8)*6,
-      a:1,decay:.008+Math.random()*.008,em:'🦋',sz:16+Math.random()*20,rot:Math.random()*Math.PI*2
-    }});
-  }}
-}}
-function drawBg(){{
-  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.8);
-  bg.addColorStop(0,'#12081e');bg.addColorStop(1,'#060410');
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  STARS.forEach(s=>{{s.tp+=s.ts;const a=s.a+Math.sin(s.tp)*.2;ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(220,180,255,${{Math.max(0,a)}})`;ctx.fill()}});
-}}
-function drawParticles(){{
-  particles.forEach((p,i)=>{{
-    p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.a-=p.decay;
-    if(p.a<=0)return;
-    ctx.save();ctx.globalAlpha=p.a;ctx.font=p.sz+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.translate(p.x,p.y);ctx.rotate(p.rot+=.05);ctx.fillText(p.em,0,0);ctx.restore();
-  }});
-  particles=particles.filter(p=>p.a>0);
-}}
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  const cocoon=document.getElementById('cocoon');
-  // Shake 3 times
-  setTimeout(()=>cocoon.classList.add('shake'),1400);
-  // More shaking
-  setTimeout(()=>{{cocoon.classList.remove('shake');void cocoon.offsetWidth;cocoon.classList.add('shake');}},2300);
-  // Emerge
-  setTimeout(()=>{{
-    cocoon.style.fontSize='clamp(5rem,15vw,9rem)';
-    let frames=0;const shake=setInterval(()=>{{cocoon.style.transform=`rotate(${{frames%2?5:-5}}deg)`;frames++;if(frames>10){{clearInterval(shake);cocoon.style.transform='';cocoon.textContent='🦋';cocoon.style.display='inline-block';cocoon.style.animation='spread 1s ease forwards';spawnParticles();phase=1;prevT=performance.now();requestAnimationFrame(loop);}}}},60);
-  }},3200);
-}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  drawBg();drawParticles();
-  if(phase===1&&elapsed>1.2&&!cardDone){{cardDone=true;setTimeout(showCard,400);}}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawBg();requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """RIGGED LOCK — Guess the 'secret number'; after 3 tries it unlocks anyway."""
+    msg = "I was going to make you work for it.\nChanged my mind.\n\nYou get it for free."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'let tries=0,unlocked=false;'
+          'const inp=document.getElementById("inp"),fb=document.getElementById("fb");'
+          'document.getElementById("guess-btn").addEventListener("click",guess);'
+          'inp.addEventListener("keydown",e=>{if(e.key==="Enter")guess();});'
+          'function guess(){'
+          '  if(unlocked)return;'
+          '  const val=inp.value.trim();'
+          '  if(!val){fb.textContent="enter a number.";return;}'
+          '  tries++;inp.value="";'
+          '  if(tries<3){'
+          '    const hints=["not quite. try again.","still no. one more try."];'
+          '    fb.textContent=hints[tries-1];'
+          '    fb.style.color="rgba(255,180,100,.7)";}'
+          '  else{'
+          '    unlocked=true;'
+          '    fb.textContent="okay. I was going to make this harder.";'
+          '    fb.style.color="rgba(100,255,180,.7)";'
+          '    document.getElementById("lock-icon").textContent="🔓";'
+          '    setTimeout(()=>{document.getElementById("lock-icon").style.animation="spin .6s ease";setTimeout(showFin,800);},800);}}'
+          'function showFin(){'
+          '  document.getElementById("puzzle").style.opacity="0";'
+          '  document.getElementById("puzzle").style.transform="scale(.95)";'
+          '  setTimeout(()=>{'
+          '    const el=document.getElementById("fin");el.classList.add("show");'
+          '    const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '    const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},50);},500);}')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#050c14;display:flex;align-items:center;justify-content:center;font-family:"Caveat",cursive;overflow:hidden}}'
+            f'#puzzle{{transition:opacity .5s,transform .5s;text-align:center;padding:20px}}'
+            f'#lock-icon{{font-size:clamp(3rem,14vw,5rem);margin-bottom:20px;display:block;animation:wobble 3s ease-in-out infinite}}'
+            f'@keyframes wobble{{0%,100%{{transform:rotate(-5deg)}}50%{{transform:rotate(5deg)}}}}'
+            f'@keyframes spin{{to{{transform:rotate(360deg)}}}}'
+            f'.q{{font-family:"Dancing Script",cursive;font-size:clamp(1.4rem,5vw,2rem);color:#38bdf8;margin-bottom:8px}}'
+            f'.hint{{font-size:.9rem;color:rgba(56,189,248,.35);letter-spacing:.08em;margin-bottom:28px}}'
+            f'.input-row{{display:flex;gap:12px;justify-content:center;margin-bottom:18px}}'
+            f'#inp{{background:rgba(56,189,248,.08);border:1.5px solid rgba(56,189,248,.25);border-radius:12px;padding:12px 18px;font-family:"Caveat",cursive;font-size:1.3rem;color:#e0f2fe;width:120px;text-align:center;outline:none}}'
+            f'#inp:focus{{border-color:rgba(56,189,248,.6)}}'
+            f'#guess-btn{{background:#38bdf8;border:none;border-radius:12px;padding:12px 22px;font-family:"Caveat",cursive;font-size:1.3rem;color:#000;cursor:pointer;transition:transform .15s}}'
+            f'#guess-btn:active{{transform:scale(.96)}}'
+            f'#fb{{font-size:1.05rem;color:rgba(255,180,100,.7);min-height:24px;transition:all .3s}}'
+            f'#fin{{position:fixed;inset:0;background:rgba(5,12,20,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 1.2s;padding:24px;text-align:center}}'
+            f'#fin.show{{opacity:1;pointer-events:all}}'
+            f'.ft{{font-family:"Dancing Script",cursive;font-size:clamp(2rem,8vw,3rem);color:#38bdf8;margin-bottom:18px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.1rem,3.5vw,1.45rem);color:#e0f2fe;line-height:1.88;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.7rem;color:#38bdf8;margin-top:18px}}'
+            f'.fd{{font-size:.7rem;color:rgba(56,189,248,.28);margin-top:3px;letter-spacing:.08em}}</style></head><body>'
+            f'<div id="puzzle">'
+            f'  <span id="lock-icon">🔒</span>'
+            f'  <div class="q">guess the number</div>'
+            f'  <div class="hint">it has something to do with you. (1 – 100)</div>'
+            f'  <div class="input-row"><input id="inp" type="number" min="1" max="100" placeholder="?"/><button id="guess-btn">guess</button></div>'
+            f'  <div id="fb"></div>'
+            f'</div>'
+            f'<div id="fin"><div class="ft">{name}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 12. CAMPFIRE — Match strikes, candle lights, warm glow reveals handwritten note
-# ══════════════════════════════════════════════════════════════════════════════
 def html_campfire(name, date_str):
-    msg = "If I could pick one place to be right now\nit would be wherever you are.\n\nThat's all."
-    return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
-<title>For {name}</title>{FONTS}
-<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;overflow:hidden;background:#050100}}
-{start_css('#ff8c42','255,140,66')}
-#scene{{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8vh;pointer-events:none}}
-.candle-wrap{{text-align:center;opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}}
-.candle-wrap.show{{opacity:1;transform:translateY(0)}}
-.candle{{font-size:clamp(3rem,10vw,5rem)}}
-.note{{background:rgba(255,252,240,.95);border-radius:10px;padding:20px 22px;width:min(300px,80vw);margin:0 auto 16px;box-shadow:0 8px 40px rgba(0,0,0,.3);opacity:0;transition:opacity 1.2s ease;text-align:left}}
-.note.show{{opacity:1}}
-.note-to{{font-family:'Caveat',cursive;font-size:.9rem;color:rgba(100,50,20,.6);margin-bottom:8px}}
-.note-msg{{font-family:'Caveat',cursive;font-size:clamp(1.1rem,3.5vw,1.3rem);line-height:1.7;color:#2a1000;white-space:pre-wrap;min-height:3em}}
-.note-from{{font-family:'Dancing Script',cursive;font-size:1.3rem;color:#c45000;text-align:right;margin-top:10px}}
-.note-date{{font-size:.65rem;color:rgba(0,0,0,.3);text-align:right}}
-</style></head><body>
-<canvas id="c"></canvas>
-{start_html(name,'#ff8c42','255,140,66')}
-<div id="scene">
-  <div class="candle-wrap" id="cwrap">
-    <div class="note" id="note">
-      <div class="note-to">hey {name.lower()},</div>
-      <div class="note-msg" id="nmsg"></div>
-      <div class="note-from">— Dipesh</div>
-      <div class="note-date">{date_str}</div>
-    </div>
-    <div class="candle">🕯️</div>
-  </div>
-</div>
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
-const MSG=`{msg}`;
-function typeMsg(el,text,spd){{el.textContent='';let i=0;const iv=setInterval(()=>{{if(i>=text.length){{clearInterval(iv);return;}}el.textContent+=text[i++];}},spd);}}
-let flameProgress=0,phase=0,prevT=0,elapsed=0;
-// Match strike particles
-let sparks=[];
-function spark(x,y){{for(let i=0;i<20;i++)sparks.push({{x,y,vx:(Math.random()-.5)*6,vy:-(Math.random()*6+2),a:1,r:1+Math.random()*2}});}}
-function drawBg(warmth){{
-  const bg=ctx.createRadialGradient(W/2,H*.7,0,W/2,H*.7,Math.max(W,H)*warmth*.7);
-  bg.addColorStop(0,`rgba(80,30,5,${{warmth*.6}})`);bg.addColorStop(.5,`rgba(30,10,2,${{warmth*.3}})`);bg.addColorStop(1,'rgba(5,1,0,1)');
-  ctx.fillStyle='#050100';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // Warm candlelight flicker on ceiling/walls
-  if(warmth>.1){{
-    const fl=ctx.createRadialGradient(W/2,H*.6,0,W/2,H*.6,Math.min(W,H)*.4*warmth);
-    fl.addColorStop(0,`rgba(255,160,60,${{warmth*.12}})`);fl.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=fl;ctx.fillRect(0,0,W,H);
-  }}
-}}
-function drawSparks(){{
-  sparks.forEach(s=>{{s.x+=s.vx;s.y+=s.vy;s.vy+=.15;s.a-=.03;if(s.a<=0)return;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,200,80,${{s.a}})`;ctx.fill()}});
-  sparks=sparks.filter(s=>s.a>0);
-}}
-// Match strike animation
-let matchX=W*.3,matchY=H*.4;
-let matchDone=false;
-function begin(){{
-  document.getElementById('start').classList.add('gone');
-  // Match strike at 1.4s
-  setTimeout(()=>{{
-    phase=1;prevT=performance.now();requestAnimationFrame(loop);
-    spark(W*.55,H*.5);
-    setTimeout(()=>spark(W*.55,H*.5),100);
-    setTimeout(()=>{{matchDone=true;phase=2;elapsed=0;}},800);
-  }},1400);
-}}
-function loop(ts){{
-  if(!prevT)prevT=ts;const dt=Math.min(.08,(ts-prevT)/1000);prevT=ts;elapsed+=dt;
-  if(phase===1){{drawBg(0);drawSparks();}}
-  if(phase===2){{
-    flameProgress=Math.min(1,elapsed/2.5);
-    drawBg(flameProgress);drawSparks();
-    if(elapsed>.8&&!document.getElementById('cwrap').classList.contains('show')){{
-      document.getElementById('cwrap').classList.add('show');
-    }}
-    if(elapsed>1.8&&!document.getElementById('note').classList.contains('show')){{
-      document.getElementById('note').classList.add('show');
-      setTimeout(()=>typeMsg(document.getElementById('nmsg'),MSG,44),800);
-    }}
-  }}
-  requestAnimationFrame(loop);
-}}
-function idle(){{if(phase>0)return;drawBg(0);requestAnimationFrame(idle);}}requestAnimationFrame(idle);
-window.addEventListener('resize',()=>{{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}});
-</script></body></html>"""
+    """DARKROOM DEVELOP — Photo develops from black; heart emerges like a darkroom print."""
+    msg = "Some things take time\nto come into focus.\n\nYou did."
+    mj = json.dumps(msg)
+    nj = json.dumps(name)
+    dj = json.dumps(date_str)
+    js = (f'const MSG={mj};const NAME={nj};const DATE={dj};'
+          'const cv=document.getElementById("c"),ctx=cv.getContext("2d");'
+          'let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;'
+          'const CX=W/2,CY=H*.42,SC=Math.min(W*.024,H*.02);'
+          'function heartPt(t){const x=16*Math.pow(Math.sin(t),3),y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));return{x:CX+x*SC,y:CY+y*SC};}'
+          'let t=0,msgShown=false;'
+          'function loop(){'
+          '  t+=.008;'
+          '  const prog=Math.min(1,t/6);'
+          '  // Dark paper background with amber tint developing'
+          '  const bg=ctx.createRadialGradient(CX,CY,0,CX,CY,Math.max(W,H));'
+          '  bg.addColorStop(0,`rgba(${Math.floor(30*prog)},${Math.floor(10*prog)},${Math.floor(5*prog)},1)`);'
+          '  bg.addColorStop(1,`rgba(2,1,0,1)`);'
+          '  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);'
+          '  // Develop the heart — amber/crimson tones'
+          '  if(prog>.1){'
+          '    const p2=Math.max(0,(prog-.1)/.9);'
+          '    // Glow behind heart'
+          '    const hg=ctx.createRadialGradient(CX,CY,0,CX,CY,SC*18*p2);'
+          '    hg.addColorStop(0,`rgba(180,60,20,${p2*.25})`);'
+          '    hg.addColorStop(.5,`rgba(100,20,5,${p2*.15})`);'
+          '    hg.addColorStop(1,"rgba(0,0,0,0)");'
+          '    ctx.fillStyle=hg;ctx.fillRect(0,0,W,H);'
+          '    // Draw heart outline developing'
+          '    const pts=[];for(let i=0;i<120;i++){const ti=(i/120)*Math.PI*2;pts.push(heartPt(ti));}'
+          '    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);'
+          '    pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();'
+          '    const hc=ctx.createLinearGradient(CX-SC*16,CY-SC*13,CX+SC*16,CY+SC*14);'
+          '    hc.addColorStop(0,`rgba(220,80,40,${p2*.9})`);'
+          '    hc.addColorStop(.5,`rgba(180,40,20,${p2*.7})`);'
+          '    hc.addColorStop(1,`rgba(140,20,10,${p2*.5})`);'
+          '    ctx.fillStyle=hc;ctx.fill();'
+          '    ctx.strokeStyle=`rgba(255,120,60,${p2*.4})`;ctx.lineWidth=2;ctx.stroke();'
+          '    // NAME text'
+          '    if(p2>.6){'
+          '      const ta=Math.min(1,(p2-.6)/.4);'
+          '      ctx.save();ctx.globalAlpha=ta;'
+          '      ctx.font=`bold ${Math.min(W*.055,24)}px "Dancing Script",cursive`;'
+          '      ctx.textAlign="center";ctx.textBaseline="middle";'
+          '      ctx.fillStyle=`rgba(255,200,160,${ta})`;'
+          '      ctx.shadowColor="rgba(255,120,60,.5)";ctx.shadowBlur=10;'
+          '      ctx.fillText(NAME,CX,CY);ctx.restore();}}'
+          '  if(!msgShown&&t>7){msgShown=true;showFin();}'
+          '  requestAnimationFrame(loop);}'
+          'function showFin(){'
+          '  const el=document.getElementById("fin");el.classList.add("show");'
+          '  const m=document.getElementById("fm");m.textContent="";let j=0;'
+          '  const iv=setInterval(()=>{if(j>=MSG.length){clearInterval(iv);return;}m.textContent+=MSG[j++];},54);}'
+          'loop();window.addEventListener("resize",()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});')
+    return (f'<!DOCTYPE html><html lang="en"><head>'
+            f'<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>'
+            f'<title>For {name}</title>{FONTS}'
+            f'<style>*{{margin:0;padding:0;box-sizing:border-box}}html,body{{width:100%;height:100%;background:#020100;overflow:hidden}}'
+            f'#fin{{position:fixed;bottom:-220px;left:50%;transform:translateX(-50%);width:min(380px,92vw);background:rgba(10,4,2,.97);border-radius:18px;padding:26px 28px 22px;border:1px solid rgba(180,60,20,.2);transition:bottom 1.3s cubic-bezier(.34,1.4,.64,1);text-align:left;z-index:10}}'
+            f'#fin.show{{bottom:clamp(18px,4vh,50px)}}'
+            f'.ft{{font-family:"Caveat",cursive;font-size:.78rem;color:rgba(180,80,40,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}}'
+            f'.fm{{font-family:"Caveat",cursive;font-size:clamp(1.05rem,3.5vw,1.35rem);color:#fde8d8;line-height:1.85;white-space:pre-wrap}}'
+            f'.ff{{font-family:"Dancing Script",cursive;font-size:1.5rem;color:#e06030;text-align:right;margin-top:14px}}'
+            f'.fd{{font-size:.68rem;color:rgba(180,80,40,.28);text-align:right;margin-top:2px;letter-spacing:.06em}}</style></head><body>'
+            f'<canvas id="c"></canvas>'
+            f'<div id="fin"><div class="ft">for {name.lower()}</div><div class="fm" id="fm"></div>'
+            f'<div class="ff">— Dipesh</div><div class="fd">{date_str}</div></div>'
+            f'<script>{js}</script></body></html>')
 
 
-
-# ══════════════════════════════════════════════════════════════════════════════
 # 13. HEARTCATCH — Game: catch falling hearts with a basket
 # ══════════════════════════════════════════════════════════════════════════════
 def html_heartcatch(name, date_str):
