@@ -1,4 +1,4 @@
-name: 💗 Daily Love Page for Jenisha
+name: 💗 Daily Love Page
 
 on:
   schedule:
@@ -23,5 +23,5 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_USERNAME: dipeshrayg
           GH_EMAIL: dipesh.ray.g@gmail.com
-          HER_NAME: Jenisha
+          HER_NAME: ${{ vars.HER_NAME }}
         run: python generator.py
