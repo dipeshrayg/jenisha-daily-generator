@@ -2310,7 +2310,7 @@ def main():
 
         desc = f"For {HER_NAME} — {theme['name']} 💗 {date_str}"
         repo_data, status = gh_api("POST", "/user/repos", {
-            "name": repo_name, "description": desc, "private": False, "auto_init": False,
+            "name": repo_name, "description": desc, "private": True, "auto_init": False,
         })
         if status not in (200, 201):
             if "already exists" in str(repo_data): print(f"⚠️   Repo exists — continuing")
